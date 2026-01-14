@@ -1,0 +1,107 @@
+---
+title: 'Deploy Test'
+description: 'Deploy a test plan to the runner service'
+---
+
+## Deploy Test
+
+Deploy a test plan to the runner service. The test will be scheduled for execution based on its frequency configuration.
+
+<ParamField body="body" path="body" type="object" required>
+  <ParamField body="name" path="body.name" type="string" required>
+    Unique name for the test. Used to identify the test in subsequent API calls.
+  </ParamField>
+  <ParamField body="plan" path="body.plan" type="object" required>
+    The JSON test plan. This is the output from the test system DSL.
+  </ParamField>
+  <ParamField body="frequency" path="body.frequency" type="string" required>
+    Frequency configuration for test execution. Examples: "every 1 minute", "every 15 minutes", "every 1 hour", "every 1 day".
+  </ParamField>
+</ParamField>
+
+<ResponseField name="200" body="body">
+  <ParamField body="id" path="body.id" type="string">
+    Unique identifier for the deployed test.
+  </ParamField>
+  <ParamField body="name" path="body.name" type="string">
+    Name of the test.
+  </ParamField>
+  <ParamField body="status" path="body.status" type="string">
+    Deployment status. Values: "deployed", "error".
+  </ParamField>
+  <ParamField body="next_execution" path="body.next_execution" type="string">
+    ISO 8601 timestamp of the next scheduled execution.
+  </ParamField>
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X POST https://runner.example.com/api/tests \
+  -H "X-API-Key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "health-check",
+    "plan": {
+      "name": "health-check",
+      "endpoint_host": "http://localhost:3000",
+      "nodes": {
+        "START": { "type": "start" },
+        "health": {
+          "type": "endpoint",
+          "method": "GET",
+          "path": "/health",
+          "response_format": "JSON"
+        },
+        "END": { "type": "end" }
+      },
+      "edges": [
+        { "from": "START", "to": "health" },
+        { "from": "health", "to": "END" }
+      ]
+    },
+    "frequency": "every 1 minute"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "id": "test-abc123",
+  "name": "health-check",
+  "status": "deployed",
+  "next_execution": "2024-01-15T10:15:00Z"
+}
+```
+
+## Error Responses
+
+<ResponseField name="400" body="body">
+  <ParamField body="error" path="body.error" type="object">
+    <ParamField body="code" path="body.error.code" type="string">
+      Error code (e.g., "INVALID_PLAN", "INVALID_FREQUENCY").
+    </ParamField>
+    <ParamField body="message" path="body.error.message" type="string">
+      Human-readable error message.
+    </ParamField>
+  </ParamField>
+</ResponseField>
+
+<ResponseField name="409" body="body">
+  <ParamField body="error" path="body.error" type="object">
+    <ParamField body="code" path="body.error.code" type="string">
+      "TEST_EXISTS" - A test with this name already exists.
+    </ParamField>
+    <ParamField body="message" path="body.error.message" type="string">
+      Error message indicating the test already exists.
+    </ParamField>
+  </ParamField>
+</ResponseField>
+
+## Notes
+
+- Test names must be unique. If a test with the same name already exists, use the update endpoint or delete the existing test first.
+- The test plan must be valid JSON and conform to the test plan schema.
+- Frequency strings must follow the format: "every N [minute|minutes|hour|hours|day|days]".
+- The test will be scheduled for execution immediately after deployment.

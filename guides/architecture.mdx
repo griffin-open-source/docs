@@ -1,0 +1,210 @@
+---
+title: "Architecture"
+description: "Understand how Griffin components work together"
+---
+
+## Overview
+
+Griffin is designed as a modular system with four main components that work together to enable API testing in your codebase. Each component has a specific responsibility and can be used independently or together.
+
+## Component Architecture
+
+<Frame>
+  <img src="/images/architecture-diagram.png" alt="Griffin architecture diagram showing the flow from test files to execution" />
+</Frame>
+
+## Core Components
+
+### 1. Griffin Test System
+
+The TypeScript DSL library that provides the API for writing tests.
+
+**Purpose**: Define API tests using a chainable, type-safe API
+
+**Key Features**:
+- Chainable API for building test plans
+- Support for endpoints, waits, assertions, and edges
+- Outputs JSON test plans for execution
+- TypeScript-first design for better developer experience
+
+**Location**: `griffin-test-system/`
+
+**Usage**:
+```typescript
+import { GET, ApiCheckBuilder, JSON, START, END } from "griffin-test-system";
+
+const builder = new ApiCheckBuilder({
+  name: "my-check",
+  endpoint_host: "http://localhost:3000"
+});
+
+const plan = builder
+  .addEndpoint("health", { method: GET, response_format: JSON, path: "/health" })
+  .addEdge(START, "health")
+  .addEdge("health", END);
+```
+
+### 2. Griffin CLI
+
+Command-line tool for discovering, running, and managing tests.
+
+**Purpose**: Developer interface for working with Griffin tests
+
+**Key Features**:
+- Discovers `.ts` test files in `__griffin__` subdirectories
+- Runs tests locally against development servers
+- Configures runner hosts for remote execution
+- Deploys tests to remote runners (coming soon)
+- Views logs and executes tests remotely (coming soon)
+
+**Location**: `griffin-cli/`
+
+**Commands**:
+- `griffin run-local` - Run all discovered tests locally
+- `griffin configure-runner-host <host>` - Set up remote execution (coming soon)
+- `griffin deploy` - Deploy tests to a runner (coming soon)
+- `griffin logs <check-name>` - View execution logs (coming soon)
+
+### 3. Griffin Plan Executor
+
+Executes JSON test plans with graph-based flow control.
+
+**Purpose**: Runtime execution engine for test plans
+
+**Key Features**:
+- Executes JSON test plans
+- Graph-based execution following edges
+- Support for endpoints, waits, and assertions
+- Local and remote execution modes
+- Can run in Lambda functions or containers
+
+**Location**: `griffin-plan-executor/`
+
+**Execution Flow**:
+1. Loads JSON test plan
+2. Builds execution graph from edges
+3. Traverses graph starting from START node
+4. Executes endpoints, waits, and assertions
+5. Follows edges to next nodes
+6. Completes when END node is reached
+
+### 4. Griffin Runner
+
+Orchestration service for scheduling and executing tests in production.
+
+**Purpose**: Production test execution and monitoring
+
+**Key Features**:
+- Schedules tests based on frequency configuration
+- Executes test plans using the plan executor
+- Stores execution results and logs in PostgreSQL
+- Provides REST API for CLI interactions
+- Manages test deployments and configurations
+
+**Location**: `griffin-runner/`
+
+**Responsibilities**:
+- Test scheduling and orchestration
+- Result storage and retrieval
+- API for test management
+- Remote execution coordination
+
+## Data Flow
+
+### Local Development Flow
+
+1. **Write Test**: Developer creates a `.ts` file in `__griffin__` directory using the test system DSL
+2. **Discover**: CLI scans for test files in `__griffin__` directories
+3. **Compile**: Test system generates JSON test plan from TypeScript
+4. **Execute**: Plan executor runs the test plan against the configured endpoint
+5. **Report**: Results are displayed in the terminal
+
+### Production Flow
+
+1. **Deploy**: Tests are deployed to the runner service
+2. **Schedule**: Runner schedules tests based on their frequency configuration
+3. **Execute**: Runner uses plan executor to run tests at scheduled times
+4. **Store**: Results and logs are stored in PostgreSQL
+5. **Monitor**: Developers can view logs and results via CLI or API
+
+## Test Plan Structure
+
+Test plans are JSON documents that describe the test flow:
+
+```json
+{
+  "name": "my-check",
+  "endpoint_host": "http://localhost:3000",
+  "nodes": {
+    "START": { "type": "start" },
+    "health": {
+      "type": "endpoint",
+      "method": "GET",
+      "path": "/health",
+      "response_format": "JSON"
+    },
+    "END": { "type": "end" }
+  },
+  "edges": [
+    { "from": "START", "to": "health" },
+    { "from": "health", "to": "END" }
+  ]
+}
+```
+
+## Graph-Based Execution
+
+Griffin uses a graph-based execution model where:
+- **Nodes** represent test steps (endpoints, waits, assertions)
+- **Edges** define the flow between steps
+- Execution starts at `START` and follows edges until `END` is reached
+- This allows for complex test flows with branching and conditional logic
+
+## Integration Points
+
+### Test System → Plan Executor
+
+The test system outputs JSON test plans that the plan executor can consume. This separation allows:
+- Tests to be written in TypeScript (developer-friendly)
+- Plans to be executed in any environment (language-agnostic JSON)
+
+### CLI → Runner
+
+The CLI communicates with the runner service via REST API for:
+- Deploying tests
+- Viewing logs
+- Managing configurations
+- Triggering manual executions
+
+### Runner → Plan Executor
+
+The runner service uses the plan executor to actually run tests. This can happen:
+- Locally within the runner service
+- Remotely in Lambda functions
+- In containers or other execution environments
+
+## Extension Points
+
+Griffin is designed to be extensible:
+
+- **Custom Assertions**: Add new assertion types to the test system
+- **Custom Endpoints**: Support different endpoint types beyond HTTP
+- **Custom Executors**: Implement executors for different environments
+- **Custom Storage**: Replace PostgreSQL with other storage backends
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Test System Guide" icon="code" href="/guides/test-system">
+    Learn how to write tests using the TypeScript DSL.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/guides/cli">
+    Explore all CLI commands and options.
+  </Card>
+  <Card title="Plan Executor" icon="play" href="/guides/executor">
+    Understand how test plans are executed.
+  </Card>
+  <Card title="Runner Service" icon="server" href="/guides/runner">
+    Set up production test execution.
+  </Card>
+</CardGroup>

@@ -1,0 +1,85 @@
+---
+title: 'List Tests'
+description: 'Get all deployed tests'
+---
+
+## List Tests
+
+Retrieve a list of all tests deployed to the runner service.
+
+<ResponseField name="200" body="body">
+  <ParamField body="tests" path="body.tests" type="array">
+    Array of test objects.
+    <ParamField body="id" path="body.tests[].id" type="string">
+      Unique identifier for the test.
+    </ParamField>
+    <ParamField body="name" path="body.tests[].name" type="string">
+      Name of the test.
+    </ParamField>
+    <ParamField body="frequency" path="body.tests[].frequency" type="string">
+      Frequency configuration (e.g., "every 15 minutes").
+    </ParamField>
+    <ParamField body="status" path="body.tests[].status" type="string">
+      Current status. Values: "active", "paused", "error".
+    </ParamField>
+    <ParamField body="last_execution" path="body.tests[].last_execution" type="string">
+      ISO 8601 timestamp of the last execution, or null if never executed.
+    </ParamField>
+    <ParamField body="next_execution" path="body.tests[].next_execution" type="string">
+      ISO 8601 timestamp of the next scheduled execution.
+    </ParamField>
+  </ParamField>
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X GET https://runner.example.com/api/tests \
+  -H "X-API-Key: your-api-key"
+```
+
+## Example Response
+
+```json
+{
+  "tests": [
+    {
+      "id": "test-abc123",
+      "name": "health-check",
+      "frequency": "every 1 minute",
+      "status": "active",
+      "last_execution": "2024-01-15T10:14:00Z",
+      "next_execution": "2024-01-15T10:15:00Z"
+    },
+    {
+      "id": "test-def456",
+      "name": "user-crud-flow",
+      "frequency": "every 15 minutes",
+      "status": "active",
+      "last_execution": "2024-01-15T10:00:00Z",
+      "next_execution": "2024-01-15T10:15:00Z"
+    }
+  ]
+}
+```
+
+## Query Parameters
+
+<ParamField query="status" type="string">
+  Filter tests by status. Values: "active", "paused", "error". If not provided, returns all tests.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum number of tests to return. Default: 100, Max: 1000.
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Number of tests to skip for pagination. Default: 0.
+</ParamField>
+
+## Example with Query Parameters
+
+```bash
+curl -X GET "https://runner.example.com/api/tests?status=active&limit=10&offset=0" \
+  -H "X-API-Key: your-api-key"
+```

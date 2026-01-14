@@ -1,0 +1,363 @@
+---
+title: "CLI Reference"
+description: "Command-line interface for running and managing Griffin tests"
+---
+
+## Overview
+
+The Griffin CLI is a command-line tool that allows you to discover, run, and manage API tests. It can be used locally during development or to interact with remote runner services.
+
+## Installation
+
+### Global Installation
+
+```bash
+npm install -g griffin-cli
+```
+
+### Using npx (No Installation)
+
+```bash
+npx griffin-cli run-local
+```
+
+### Building from Source
+
+```bash
+cd griffin-cli
+npm install
+npm run build
+node dist/cli.js run-local
+```
+
+## Commands
+
+### `run-local`
+
+Runs all discovered tests locally against their configured endpoint hosts.
+
+```bash
+griffin run-local
+```
+
+**What it does**:
+1. Scans for `.ts` test files in `__griffin__` subdirectories
+2. Compiles each test file to generate JSON test plans
+3. Executes each test plan using the plan executor
+4. Displays results in the terminal
+
+**Example Output**:
+```
+Discovering tests...
+Found 3 test files in __griffin__ directories
+
+Running: health-check
+  ✓ GET /health - 200 OK (45ms)
+
+Running: user-crud-flow
+  ✓ POST /users - 201 Created (120ms)
+  ✓ GET /users/123 - 200 OK (30ms)
+  ✓ PUT /users/123 - 200 OK (50ms)
+  ✓ DELETE /users/123 - 204 No Content (25ms)
+
+Running: api-smoke-test
+  ✓ GET /api/status - 200 OK (30ms)
+  ✗ GET /api/data - 500 Internal Server Error (200ms)
+
+Summary: 2 passed, 1 failed
+```
+
+**Options**:
+- `--verbose` or `-v`: Show detailed execution logs
+- `--filter <name>`: Run only tests matching the filter pattern
+
+```bash
+griffin run-local --verbose
+griffin run-local --filter health
+```
+
+### `configure-runner-host` (Coming Soon)
+
+Configures the host URL for the remote runner service.
+
+```bash
+griffin configure-runner-host <host>
+```
+
+**Example**:
+```bash
+griffin configure-runner-host https://runner.example.com
+```
+
+This stores the runner host configuration for use with other commands.
+
+### `deploy` (Coming Soon)
+
+Deploys all discovered tests to the configured runner service.
+
+```bash
+griffin deploy
+```
+
+**What it does**:
+1. Discovers all test files
+2. Compiles them to JSON test plans
+3. Sends test plans to the runner service
+4. Runner schedules tests based on their frequency configuration
+
+**Options**:
+- `--dry-run`: Show what would be deployed without actually deploying
+- `--force`: Force deployment even if tests already exist
+
+```bash
+griffin deploy --dry-run
+griffin deploy --force
+```
+
+### `logs` (Coming Soon)
+
+Views execution logs for a specific test from the runner service.
+
+```bash
+griffin logs <check-name>
+```
+
+**Example**:
+```bash
+griffin logs health-check
+```
+
+**Options**:
+- `--tail`: Follow logs in real-time
+- `--limit <n>`: Show only the last N executions
+
+```bash
+griffin logs health-check --tail
+griffin logs health-check --limit 10
+```
+
+### `list` (Coming Soon)
+
+Lists all tests deployed to the runner service.
+
+```bash
+griffin list
+```
+
+**Example Output**:
+```
+Deployed Tests:
+  - health-check (every 1 minute)
+  - user-crud-flow (every 15 minutes)
+  - api-smoke-test (every 1 hour)
+```
+
+### `status` (Coming Soon)
+
+Shows the status of a specific test or all tests.
+
+```bash
+griffin status
+griffin status <check-name>
+```
+
+**Example Output**:
+```
+Test Status:
+  health-check: ✓ Running (last execution: 2 minutes ago)
+  user-crud-flow: ✓ Running (last execution: 5 minutes ago)
+  api-smoke-test: ✗ Failed (last execution: 1 hour ago)
+```
+
+## Test Discovery
+
+The CLI automatically discovers test files by:
+
+1. **Scanning for directories**: Looks for `__griffin__` subdirectories
+2. **Finding test files**: Identifies all `.ts` files within those directories
+3. **Validating tests**: Ensures each file properly exports a test plan
+
+### Directory Structure
+
+```
+my-project/
+├── src/
+│   └── ...
+├── __griffin__/
+│   ├── health-check.ts
+│   └── api-tests.ts
+└── packages/
+    └── api/
+        └── __griffin__/
+            └── integration-tests.ts
+```
+
+All test files in any `__griffin__` directory will be discovered and executed.
+
+### Test File Requirements
+
+Each test file must:
+- Be a TypeScript (`.ts`) file
+- Import from `griffin-test-system`
+- Use `ApiCheckBuilder` to create a test plan
+- Call `plan.create()` to register the test
+
+```typescript
+// Valid test file
+import { GET, ApiCheckBuilder, JSON, START, END, Frequency } from "griffin-test-system";
+
+const builder = new ApiCheckBuilder({
+  name: "my-test",
+  endpoint_host: "http://localhost:3000"
+});
+
+const plan = builder
+  .addEndpoint("health", { method: GET, response_format: JSON, path: "/health" })
+  .addEdge(START, "health")
+  .addEdge("health", END);
+
+plan.create({ frequency: Frequency.every(1).minute() });
+```
+
+## Configuration
+
+### Runner Host Configuration
+
+The runner host is stored in a configuration file (typically `~/.griffin/config.json`):
+
+```json
+{
+  "runnerHost": "https://runner.example.com"
+}
+```
+
+This can be set using:
+```bash
+griffin configure-runner-host <host>
+```
+
+### Project Configuration
+
+You can create a `griffin.config.json` file in your project root:
+
+```json
+{
+  "testDirectories": ["__griffin__", "__tests__/griffin"],
+  "defaultEndpointHost": "http://localhost:3000",
+  "timeout": 30000
+}
+```
+
+**Options**:
+- `testDirectories`: Custom directories to scan for tests (default: `["__griffin__"]`)
+- `defaultEndpointHost`: Default host if not specified in test (optional)
+- `timeout`: Default timeout for test execution in milliseconds
+
+## Environment Variables
+
+You can configure the CLI using environment variables:
+
+```bash
+GRIFFIN_RUNNER_HOST=https://runner.example.com
+GRIFFIN_TIMEOUT=30000
+GRIFFIN_VERBOSE=true
+```
+
+## Exit Codes
+
+The CLI uses standard exit codes:
+
+- `0`: All tests passed
+- `1`: One or more tests failed
+- `2`: Error during test discovery or execution
+
+This makes it suitable for use in CI/CD pipelines:
+
+```yaml
+# GitHub Actions example
+- name: Run Griffin tests
+  run: griffin run-local
+```
+
+## Troubleshooting
+
+### Tests Not Being Discovered
+
+**Problem**: CLI doesn't find your test files
+
+**Solutions**:
+- Ensure test files are in `__griffin__` subdirectories
+- Check that files have `.ts` extension
+- Verify test files properly export test plans
+- Use `--verbose` flag to see discovery process
+
+### Import Errors
+
+**Problem**: `Cannot find module 'griffin-test-system'`
+
+**Solutions**:
+- Install `griffin-test-system`: `npm install griffin-test-system`
+- For local development, use relative imports: `from "../griffin-test-system/src/index"`
+- Ensure TypeScript can resolve the module
+
+### Connection Errors
+
+**Problem**: Cannot connect to endpoint host
+
+**Solutions**:
+- Verify the API server is running
+- Check the `endpoint_host` in your test configuration
+- Ensure the host includes the protocol (`http://` or `https://`)
+- Check network connectivity and firewall settings
+
+### Timeout Errors
+
+**Problem**: Tests timeout before completing
+
+**Solutions**:
+- Increase timeout in test configuration
+- Check if API server is responding slowly
+- Verify network connectivity
+- Use `--verbose` to see where timeout occurs
+
+## Best Practices
+
+### Organizing Tests
+
+- Group related tests in the same `__griffin__` directory
+- Use descriptive file names: `user-api-tests.ts`, `auth-flow.ts`
+- Keep tests focused on specific API areas
+
+### Running in CI/CD
+
+```yaml
+# Example GitHub Actions workflow
+name: API Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm install
+      - run: npm install -g griffin-cli
+      - run: griffin run-local
+```
+
+### Local Development
+
+- Run `griffin run-local` frequently during development
+- Use `--verbose` to debug test issues
+- Keep your API server running on the configured port
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Test System Guide" icon="code" href="/guides/test-system">
+    Learn how to write tests.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get started with your first test.
+  </Card>
+</CardGroup>

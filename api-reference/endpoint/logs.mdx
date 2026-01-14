@@ -1,0 +1,177 @@
+---
+title: 'Get Execution Logs'
+description: 'Retrieve logs for a specific test execution'
+---
+
+## Get Execution Logs
+
+Retrieve detailed execution logs for a specific test execution. Logs include step-by-step execution details, HTTP requests/responses, and any errors encountered.
+
+<ParamField path="testId" type="string" required>
+  The unique identifier or name of the test.
+</ParamField>
+
+<ParamField path="executionId" type="string" required>
+  The unique identifier of the execution. Use "latest" to get logs for the most recent execution.
+</ParamField>
+
+<ResponseField name="200" body="body">
+  <ParamField body="execution_id" path="body.execution_id" type="string">
+    Unique identifier for this execution.
+  </ParamField>
+  <ParamField body="test_id" path="body.test_id" type="string">
+    Identifier of the test.
+  </ParamField>
+  <ParamField body="status" path="body.status" type="string">
+    Execution status: "passed", "failed", "error", "running".
+  </ParamField>
+  <ParamField body="duration" path="body.duration" type="integer">
+    Total execution duration in milliseconds.
+  </ParamField>
+  <ParamField body="timestamp" path="body.timestamp" type="string">
+    ISO 8601 timestamp when execution started.
+  </ParamField>
+  <ParamField body="logs" path="body.logs" type="array">
+    Array of log entries.
+    <ParamField body="timestamp" path="body.logs[].timestamp" type="string">
+      ISO 8601 timestamp of the log entry.
+    </ParamField>
+    <ParamField body="level" path="body.logs[].level" type="string">
+      Log level: "info", "warn", "error", "debug".
+    </ParamField>
+    <ParamField body="message" path="body.logs[].message" type="string">
+      Log message.
+    </ParamField>
+    <ParamField body="data" path="body.logs[].data" type="object">
+      Additional log data (optional).
+    </ParamField>
+  </ParamField>
+  <ParamField body="nodes" path="body.nodes" type="object">
+    Execution results for each node in the test plan.
+    <ParamField body="node_name" path="body.nodes.node_name" type="object">
+      Results for a specific node.
+      <ParamField body="status" path="body.nodes.node_name.status" type="string">
+        Node execution status.
+      </ParamField>
+      <ParamField body="duration" path="body.nodes.node_name.duration" type="integer">
+        Node execution duration in milliseconds.
+      </ParamField>
+      <ParamField body="request" path="body.nodes.node_name.request" type="object">
+        HTTP request details (for endpoint nodes).
+      </ParamField>
+      <ParamField body="response" path="body.nodes.node_name.response" type="object">
+        HTTP response details (for endpoint nodes).
+      </ParamField>
+    </ParamField>
+  </ParamField>
+</ResponseField>
+
+## Example Request
+
+```bash
+# Get logs for a specific execution
+curl -X GET https://runner.example.com/api/tests/health-check/executions/exec-xyz789/logs \
+  -H "X-API-Key: your-api-key"
+
+# Get logs for the latest execution
+curl -X GET https://runner.example.com/api/tests/health-check/executions/latest/logs \
+  -H "X-API-Key: your-api-key"
+```
+
+## Example Response
+
+```json
+{
+  "execution_id": "exec-xyz789",
+  "test_id": "test-abc123",
+  "status": "passed",
+  "duration": 1234,
+  "timestamp": "2024-01-15T10:14:00Z",
+  "logs": [
+    {
+      "timestamp": "2024-01-15T10:14:00.123Z",
+      "level": "info",
+      "message": "Starting execution"
+    },
+    {
+      "timestamp": "2024-01-15T10:14:00.456Z",
+      "level": "info",
+      "message": "Executing endpoint: health",
+      "data": {
+        "node": "health",
+        "method": "GET",
+        "url": "http://localhost:3000/health"
+      }
+    },
+    {
+      "timestamp": "2024-01-15T10:14:00.789Z",
+      "level": "info",
+      "message": "Endpoint execution completed",
+      "data": {
+        "node": "health",
+        "status_code": 200,
+        "duration": 45
+      }
+    },
+    {
+      "timestamp": "2024-01-15T10:14:01.234Z",
+      "level": "info",
+      "message": "Execution completed successfully"
+    }
+  ],
+  "nodes": {
+    "health": {
+      "status": "passed",
+      "duration": 45,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:3000/health",
+        "headers": {}
+      },
+      "response": {
+        "status_code": 200,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": {
+          "status": "ok"
+        }
+      }
+    }
+  }
+}
+```
+
+## Query Parameters
+
+<ParamField query="level" type="string">
+  Filter logs by level. Values: "info", "warn", "error", "debug". If not provided, returns all logs.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum number of log entries to return. Default: 1000, Max: 10000.
+</ParamField>
+
+<ParamField query="offset" type="integer">
+  Number of log entries to skip for pagination. Default: 0.
+</ParamField>
+
+## Example with Query Parameters
+
+```bash
+curl -X GET "https://runner.example.com/api/tests/health-check/executions/latest/logs?level=error&limit=100" \
+  -H "X-API-Key: your-api-key"
+```
+
+## Error Responses
+
+<ResponseField name="404" body="body">
+  <ParamField body="error" path="body.error" type="object">
+    <ParamField body="code" path="body.error.code" type="string">
+      "EXECUTION_NOT_FOUND" or "TEST_NOT_FOUND"
+    </ParamField>
+    <ParamField body="message" path="body.error.message" type="string">
+      Execution or test not found message.
+    </ParamField>
+  </ParamField>
+</ResponseField>

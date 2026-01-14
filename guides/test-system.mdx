@@ -1,0 +1,401 @@
+---
+title: "Test System"
+description: "Write API tests using the TypeScript DSL"
+---
+
+## Overview
+
+The Griffin Test System provides a TypeScript DSL (Domain-Specific Language) for defining API tests. Tests are written in TypeScript and compiled to JSON test plans that can be executed by the plan executor.
+
+## Getting Started
+
+### Installation
+
+If using Griffin from npm:
+
+```bash
+npm install griffin-test-system
+```
+
+For local development, import from the source:
+
+```typescript
+import { ... } from "../griffin-test-system/src/index";
+```
+
+### Basic Example
+
+```typescript
+import { GET, ApiCheckBuilder, JSON, START, END, Frequency } from "griffin-test-system";
+
+const builder = new ApiCheckBuilder({
+  name: "health-check",
+  endpoint_host: "http://localhost:3000"
+});
+
+const plan = builder
+  .addEndpoint("health", { 
+    method: GET, 
+    response_format: JSON, 
+    path: "/health" 
+  })
+  .addEdge(START, "health")
+  .addEdge("health", END);
+
+plan.create({ frequency: Frequency.every(1).minute() });
+```
+
+## ApiCheckBuilder
+
+The `ApiCheckBuilder` is the main class for constructing test plans.
+
+### Configuration
+
+```typescript
+const builder = new ApiCheckBuilder({
+  name: "my-check",                    // Unique name for the check
+  endpoint_host: "http://localhost:3000"  // Base URL for all endpoints
+});
+```
+
+**Configuration Options**:
+- `name` (required): Unique identifier for the test
+- `endpoint_host` (required): Base URL for API endpoints (including port)
+
+## Adding Endpoints
+
+Endpoints represent API calls in your test.
+
+### HTTP Methods
+
+```typescript
+import { GET, POST, PUT, DELETE, PATCH } from "griffin-test-system";
+
+// GET request
+builder.addEndpoint("get-users", {
+  method: GET,
+  response_format: JSON,
+  path: "/users"
+});
+
+// POST request
+builder.addEndpoint("create-user", {
+  method: POST,
+  response_format: JSON,
+  path: "/users",
+  body: { name: "John", email: "john@example.com" }
+});
+```
+
+### Response Formats
+
+```typescript
+import { JSON, XML, TEXT, HTML } from "griffin-test-system";
+
+builder.addEndpoint("json-endpoint", {
+  method: GET,
+  response_format: JSON,
+  path: "/api/data"
+});
+
+builder.addEndpoint("xml-endpoint", {
+  method: GET,
+  response_format: XML,
+  path: "/api/data.xml"
+});
+```
+
+### Request Headers
+
+```typescript
+builder.addEndpoint("authenticated", {
+  method: GET,
+  response_format: JSON,
+  path: "/api/protected",
+  headers: {
+    "Authorization": "Bearer token123",
+    "Content-Type": "application/json"
+  }
+});
+```
+
+### Request Body
+
+```typescript
+builder.addEndpoint("create-item", {
+  method: POST,
+  response_format: JSON,
+  path: "/items",
+  body: {
+    name: "New Item",
+    description: "Item description",
+    price: 29.99
+  }
+});
+```
+
+## Building Test Flows
+
+Tests are built as graphs with nodes (endpoints, waits, assertions) connected by edges.
+
+### Edges
+
+Edges define the flow between test steps:
+
+```typescript
+// Start → endpoint → end
+builder
+  .addEdge(START, "health")
+  .addEdge("health", END);
+
+// Multiple steps
+builder
+  .addEdge(START, "create-user")
+  .addEdge("create-user", "get-user")
+  .addEdge("get-user", END);
+```
+
+### START and END Nodes
+
+Every test must have:
+- A `START` node (imported constant)
+- An `END` node (imported constant)
+- At least one edge from `START` to an endpoint
+- At least one edge from an endpoint to `END`
+
+```typescript
+import { START, END } from "griffin-test-system";
+
+builder
+  .addEdge(START, "first-endpoint")
+  .addEdge("last-endpoint", END);
+```
+
+## Waits
+
+Add delays between test steps:
+
+```typescript
+import { Wait } from "griffin-test-system";
+
+builder.addWait("wait-1s", {
+  duration: 1000  // milliseconds
+});
+
+// Use in flow
+builder
+  .addEdge(START, "create-item")
+  .addEdge("create-item", "wait-1s")
+  .addEdge("wait-1s", "get-item")
+  .addEdge("get-item", END);
+```
+
+## Assertions
+
+Assertions validate responses (structure in place, implementation coming soon):
+
+```typescript
+import { Assert } from "griffin-test-system";
+
+builder.addAssertion("check-status", {
+  endpoint: "health",
+  condition: "status_code",
+  expected: 200
+});
+
+builder.addAssertion("check-body", {
+  endpoint: "get-user",
+  condition: "body_contains",
+  expected: "name"
+});
+```
+
+## Frequency Configuration
+
+Configure how often tests should run:
+
+```typescript
+import { Frequency } from "griffin-test-system";
+
+// Every minute
+plan.create({ frequency: Frequency.every(1).minute() });
+
+// Every 15 minutes
+plan.create({ frequency: Frequency.every(15).minutes() });
+
+// Every hour
+plan.create({ frequency: Frequency.every(1).hour() });
+
+// Every day
+plan.create({ frequency: Frequency.every(1).day() });
+```
+
+## Complex Test Flows
+
+### Sequential Flow
+
+```typescript
+const plan = builder
+  .addEndpoint("create", { method: POST, response_format: JSON, path: "/items", body: {...} })
+  .addEndpoint("read", { method: GET, response_format: JSON, path: "/items/{id}" })
+  .addEndpoint("update", { method: PUT, response_format: JSON, path: "/items/{id}", body: {...} })
+  .addEndpoint("delete", { method: DELETE, response_format: JSON, path: "/items/{id}" })
+  .addEdge(START, "create")
+  .addEdge("create", "read")
+  .addEdge("read", "update")
+  .addEdge("update", "delete")
+  .addEdge("delete", END);
+```
+
+### Parallel Branches
+
+```typescript
+// Multiple paths from one endpoint
+builder
+  .addEdge(START, "get-data")
+  .addEdge("get-data", "process-1")
+  .addEdge("get-data", "process-2")
+  .addEdge("process-1", END)
+  .addEdge("process-2", END);
+```
+
+## Using Variables
+
+Extract values from responses to use in subsequent requests:
+
+```typescript
+// Extract ID from create response
+builder.addEndpoint("create", {
+  method: POST,
+  response_format: JSON,
+  path: "/items",
+  body: { name: "Item" },
+  extract: {
+    itemId: "$.id"  // JSONPath expression
+  }
+});
+
+// Use extracted value
+builder.addEndpoint("get-item", {
+  method: GET,
+  response_format: JSON,
+  path: "/items/{itemId}"  // Uses extracted itemId
+});
+```
+
+## Best Practices
+
+### Organizing Tests
+
+Create separate test files for different API areas:
+
+```
+__griffin__/
+  ├── auth.ts          # Authentication tests
+  ├── users.ts         # User management tests
+  ├── products.ts      # Product API tests
+  └── orders.ts        # Order processing tests
+```
+
+### Naming Conventions
+
+- Use descriptive names for endpoints: `get-user-by-id`, `create-order`
+- Use kebab-case for check names: `user-crud-flow`
+- Group related endpoints with prefixes: `auth-login`, `auth-logout`
+
+### Error Handling
+
+```typescript
+// Test should handle expected errors
+builder.addEndpoint("get-missing", {
+  method: GET,
+  response_format: JSON,
+  path: "/items/99999",
+  expected_status: 404  // This is expected
+});
+```
+
+## Complete Example
+
+```typescript
+import { 
+  GET, POST, PUT, DELETE,
+  ApiCheckBuilder, 
+  JSON, 
+  START, END, 
+  Frequency,
+  Wait
+} from "griffin-test-system";
+
+const builder = new ApiCheckBuilder({
+  name: "user-crud-flow",
+  endpoint_host: "http://localhost:3000"
+});
+
+// Create user
+builder.addEndpoint("create-user", {
+  method: POST,
+  response_format: JSON,
+  path: "/users",
+  body: {
+    name: "Test User",
+    email: "test@example.com"
+  },
+  extract: {
+    userId: "$.id"
+  }
+});
+
+// Wait for processing
+builder.addWait("wait-processing", {
+  duration: 2000
+});
+
+// Get user
+builder.addEndpoint("get-user", {
+  method: GET,
+  response_format: JSON,
+  path: "/users/{userId}"
+});
+
+// Update user
+builder.addEndpoint("update-user", {
+  method: PUT,
+  response_format: JSON,
+  path: "/users/{userId}",
+  body: {
+    name: "Updated User",
+    email: "updated@example.com"
+  }
+});
+
+// Delete user
+builder.addEndpoint("delete-user", {
+  method: DELETE,
+  response_format: JSON,
+  path: "/users/{userId}"
+});
+
+// Build flow
+const plan = builder
+  .addEdge(START, "create-user")
+  .addEdge("create-user", "wait-processing")
+  .addEdge("wait-processing", "get-user")
+  .addEdge("get-user", "update-user")
+  .addEdge("update-user", "delete-user")
+  .addEdge("delete-user", END);
+
+// Create with frequency
+plan.create({ frequency: Frequency.every(15).minutes() });
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="CLI Reference" icon="terminal" href="/guides/cli">
+    Learn how to run your tests.
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/guides/architecture">
+    Understand how tests are executed.
+  </Card>
+</CardGroup>

@@ -1,0 +1,470 @@
+---
+title: "Runner Service"
+description: "Production test execution and orchestration"
+---
+
+## Overview
+
+The Griffin Runner is an orchestration service that schedules and executes API tests in production. It manages test deployments, schedules executions based on frequency configurations, stores results, and provides a REST API for interaction.
+
+## Features
+
+- **Test Scheduling**: Automatically runs tests based on their frequency configuration
+- **Result Storage**: Stores execution results and logs in PostgreSQL
+- **REST API**: Provides endpoints for CLI and external tool integration
+- **Remote Execution**: Can execute tests in various environments (Lambda, containers, etc.)
+- **Monitoring**: Tracks test execution history and status
+
+## Architecture
+
+The runner service consists of several components:
+
+### Scheduler
+
+Manages test execution timing based on frequency configurations.
+
+**Responsibilities**:
+- Parse frequency configurations (every N minutes, hours, days)
+- Schedule test executions
+- Trigger executions at the right time
+- Handle missed executions
+
+### Executor Integration
+
+Uses the plan executor to actually run tests.
+
+**Flow**:
+1. Scheduler triggers test execution
+2. Loads test plan from storage
+3. Invokes plan executor
+4. Collects execution results
+5. Stores results in database
+
+### Storage
+
+PostgreSQL database for persistent storage.
+
+**Stored Data**:
+- Test plans and configurations
+- Execution results and logs
+- Test history and statistics
+- Runner configuration
+
+### REST API
+
+HTTP API for external interactions.
+
+**Endpoints**:
+- Deploy tests
+- View logs and results
+- Manage configurations
+- Trigger manual executions
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL database
+- Access to test execution environment
+
+### Installation
+
+```bash
+cd griffin-runner
+npm install
+npm run build
+```
+
+### Configuration
+
+Create a configuration file or use environment variables:
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/griffin
+
+# Server
+PORT=3001
+NODE_ENV=production
+
+# Execution
+EXECUTION_TIMEOUT=30000
+MAX_CONCURRENT_TESTS=10
+```
+
+### Database Setup
+
+Initialize the database schema:
+
+```bash
+npm run migrate
+```
+
+This creates tables for:
+- Test plans
+- Execution results
+- Logs
+- Configuration
+
+### Starting the Service
+
+```bash
+npm start
+```
+
+Or in development:
+
+```bash
+npm run dev
+```
+
+## API Endpoints
+
+### Deploy Test
+
+Deploy a test plan to the runner.
+
+```http
+POST /api/tests
+Content-Type: application/json
+
+{
+  "name": "my-check",
+  "plan": { ... },
+  "frequency": "every 15 minutes"
+}
+```
+
+**Response**:
+```json
+{
+  "id": "test-123",
+  "name": "my-check",
+  "status": "deployed",
+  "next_execution": "2024-01-15T10:15:00Z"
+}
+```
+
+### List Tests
+
+Get all deployed tests.
+
+```http
+GET /api/tests
+```
+
+**Response**:
+```json
+{
+  "tests": [
+    {
+      "id": "test-123",
+      "name": "my-check",
+      "frequency": "every 15 minutes",
+      "status": "active",
+      "last_execution": "2024-01-15T10:00:00Z",
+      "next_execution": "2024-01-15T10:15:00Z"
+    }
+  ]
+}
+```
+
+### Get Test Status
+
+Get status and details for a specific test.
+
+```http
+GET /api/tests/{testId}
+```
+
+**Response**:
+```json
+{
+  "id": "test-123",
+  "name": "my-check",
+  "status": "active",
+  "last_execution": {
+    "id": "exec-456",
+    "status": "passed",
+    "duration": 1234,
+    "timestamp": "2024-01-15T10:00:00Z"
+  },
+  "next_execution": "2024-01-15T10:15:00Z"
+}
+```
+
+### Get Execution Logs
+
+Retrieve logs for a specific execution.
+
+```http
+GET /api/tests/{testId}/executions/{executionId}/logs
+```
+
+**Response**:
+```json
+{
+  "execution_id": "exec-456",
+  "logs": [
+    {
+      "timestamp": "2024-01-15T10:00:00.123Z",
+      "level": "info",
+      "message": "Starting execution"
+    },
+    {
+      "timestamp": "2024-01-15T10:00:00.456Z",
+      "level": "info",
+      "message": "Executing endpoint: health"
+    }
+  ]
+}
+```
+
+### Trigger Manual Execution
+
+Manually trigger a test execution.
+
+```http
+POST /api/tests/{testId}/execute
+```
+
+**Response**:
+```json
+{
+  "execution_id": "exec-789",
+  "status": "running"
+}
+```
+
+### Delete Test
+
+Remove a test from the runner.
+
+```http
+DELETE /api/tests/{testId}
+```
+
+**Response**:
+```json
+{
+  "status": "deleted"
+}
+```
+
+## Scheduling
+
+### Frequency Configuration
+
+Tests are scheduled based on their frequency:
+
+- `every 1 minute` - Runs every minute
+- `every 15 minutes` - Runs every 15 minutes
+- `every 1 hour` - Runs every hour
+- `every 1 day` - Runs once per day
+
+### Scheduling Algorithm
+
+1. **Parse Frequency**: Convert frequency string to interval
+2. **Calculate Next Run**: Determine next execution time
+3. **Schedule Job**: Add to scheduler queue
+4. **Execute**: Run test at scheduled time
+5. **Reschedule**: Calculate and schedule next execution
+
+### Missed Executions
+
+If a test execution is missed (e.g., service was down):
+
+- Option 1: Skip missed executions (default)
+- Option 2: Execute immediately when service resumes
+- Option 3: Execute all missed executions (configurable)
+
+## Execution
+
+### Execution Flow
+
+1. **Trigger**: Scheduler triggers test execution
+2. **Load Plan**: Retrieve test plan from database
+3. **Execute**: Run plan using plan executor
+4. **Store Results**: Save execution results and logs
+5. **Reschedule**: Calculate and schedule next execution
+
+### Concurrent Execution
+
+The runner can execute multiple tests concurrently:
+
+- Configurable max concurrent executions
+- Each test runs independently
+- Results stored separately
+- No shared state between tests
+
+### Execution Environments
+
+Tests can be executed in different environments:
+
+**Local Execution**:
+- Runs in the same process as runner
+- Fast and simple
+- Good for development
+
+**Lambda Execution**:
+- Runs in AWS Lambda functions
+- Scalable and isolated
+- Good for production
+
+**Container Execution**:
+- Runs in Docker containers
+- Isolated and configurable
+- Good for complex environments
+
+## Monitoring
+
+### Execution History
+
+Track all test executions:
+
+- Success/failure rates
+- Execution duration trends
+- Error patterns
+- Performance metrics
+
+### Alerts
+
+Configure alerts for:
+
+- Test failures
+- Slow executions
+- Missing executions
+- Error rate thresholds
+
+### Dashboards
+
+View test status and metrics:
+
+- Overall test health
+- Recent executions
+- Failure trends
+- Performance graphs
+
+## Integration with CLI
+
+The CLI communicates with the runner via REST API:
+
+```bash
+# Configure runner host
+griffin configure-runner-host https://runner.example.com
+
+# Deploy tests
+griffin deploy
+
+# View logs
+griffin logs my-check
+
+# Check status
+griffin status
+```
+
+## Security
+
+### Authentication
+
+The runner API can be secured with:
+
+- API keys
+- OAuth tokens
+- JWT authentication
+
+### Authorization
+
+Control access to:
+
+- Deploy tests
+- View logs
+- Trigger executions
+- Manage configurations
+
+### Network Security
+
+- Use HTTPS in production
+- Restrict API access
+- Secure database connections
+- Isolate execution environments
+
+## Scaling
+
+### Horizontal Scaling
+
+Run multiple runner instances:
+
+- Load balance API requests
+- Share database
+- Distribute test execution
+- Coordinate scheduling
+
+### Vertical Scaling
+
+Increase resources for single instance:
+
+- More CPU for concurrent executions
+- More memory for large test plans
+- Faster database connections
+
+## Troubleshooting
+
+### Tests Not Executing
+
+**Check**:
+- Scheduler is running
+- Frequency configuration is valid
+- Test is deployed and active
+- Database connectivity
+
+### Execution Failures
+
+**Check**:
+- Test plan validity
+- Endpoint accessibility
+- Network connectivity
+- Execution environment
+
+### Performance Issues
+
+**Check**:
+- Database query performance
+- Concurrent execution limits
+- Resource usage
+- Network latency
+
+## Best Practices
+
+### Test Organization
+
+- Group related tests
+- Use descriptive names
+- Set appropriate frequencies
+- Monitor execution costs
+
+### Frequency Selection
+
+- Balance between coverage and cost
+- More frequent for critical APIs
+- Less frequent for non-critical tests
+- Consider API rate limits
+
+### Monitoring
+
+- Set up alerts for failures
+- Track execution trends
+- Monitor resource usage
+- Review logs regularly
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="CLI Reference" icon="terminal" href="/guides/cli">
+    Learn how to deploy and manage tests.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Explore the full REST API.
+  </Card>
+</CardGroup>
