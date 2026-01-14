@@ -1,33 +1,139 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'Runner API'
+description: 'REST API for the Griffin Runner service'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Overview
 
-## Welcome
+The Griffin Runner provides a REST API for managing and monitoring API tests in production. Use this API to deploy tests, view execution results, trigger manual executions, and manage test configurations.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URL
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://runner.example.com/api
+```
+
+<Warning>
+  Replace `runner.example.com` with your actual runner service host. The base URL can be configured using the CLI: `griffin configure-runner-host <host>`
+</Warning>
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints require authentication using API keys or bearer tokens.
+
+### Using API Keys
+
+Include your API key in the `X-API-Key` header:
+
+```http
+X-API-Key: your-api-key-here
+```
+
+### Using Bearer Tokens
+
+Include your bearer token in the `Authorization` header:
+
+```http
+Authorization: Bearer your-token-here
+```
+
+## Response Format
+
+All API responses are in JSON format. Successful responses use standard HTTP status codes:
+
+- `200 OK` - Request succeeded
+- `201 Created` - Resource created successfully
+- `204 No Content` - Request succeeded, no content to return
+- `400 Bad Request` - Invalid request
+- `401 Unauthorized` - Authentication required
+- `404 Not Found` - Resource not found
+- `500 Internal Server Error` - Server error
+
+### Error Response Format
+
+Error responses follow this structure:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": {}
   }
-]
+}
 ```
+
+## Rate Limiting
+
+API requests are rate-limited to prevent abuse. Rate limit headers are included in responses:
+
+```http
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1640995200
+```
+
+## Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Deploy Test" icon="upload" href="/api-reference/endpoint/deploy">
+    Deploy a test plan to the runner.
+  </Card>
+  <Card title="List Tests" icon="list" href="/api-reference/endpoint/list">
+    Get all deployed tests.
+  </Card>
+  <Card title="Get Test" icon="file" href="/api-reference/endpoint/get">
+    Get details for a specific test.
+  </Card>
+  <Card title="Delete Test" icon="trash" href="/api-reference/endpoint/delete">
+    Remove a test from the runner.
+  </Card>
+  <Card title="Execute Test" icon="play" href="/api-reference/endpoint/execute">
+    Manually trigger a test execution.
+  </Card>
+  <Card title="Get Logs" icon="file-lines" href="/api-reference/endpoint/logs">
+    Retrieve execution logs.
+  </Card>
+</CardGroup>
+
+## Examples
+
+### Using cURL
+
+```bash
+# List all tests
+curl -X GET https://runner.example.com/api/tests \
+  -H "X-API-Key: your-api-key"
+
+# Deploy a test
+curl -X POST https://runner.example.com/api/tests \
+  -H "X-API-Key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d @test-plan.json
+```
+
+### Using the CLI
+
+The Griffin CLI provides a convenient interface to the API:
+
+```bash
+# Configure API endpoint
+griffin configure-runner-host https://runner.example.com
+
+# Deploy tests
+griffin deploy
+
+# View logs
+griffin logs my-check
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Runner Guide" icon="server" href="/guides/runner">
+    Learn more about the runner service.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/guides/cli">
+    Use the CLI to interact with the API.
+  </Card>
+</CardGroup>

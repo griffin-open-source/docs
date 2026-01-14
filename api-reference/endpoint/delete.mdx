@@ -1,4 +1,56 @@
 ---
-title: 'Delete Plant'
-openapi: 'DELETE /plants/{id}'
+title: 'Delete Test'
+description: 'Remove a test from the runner service'
 ---
+
+## Delete Test
+
+Remove a test from the runner service. This will stop all scheduled executions and delete the test configuration.
+
+<ParamField path="testId" type="string" required>
+  The unique identifier or name of the test to delete.
+</ParamField>
+
+<ResponseField name="200" body="body">
+  <ParamField body="status" path="body.status" type="string">
+    Deletion status: "deleted".
+  </ParamField>
+  <ParamField body="id" path="body.id" type="string">
+    Identifier of the deleted test.
+  </ParamField>
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X DELETE https://runner.example.com/api/tests/health-check \
+  -H "X-API-Key: your-api-key"
+```
+
+## Example Response
+
+```json
+{
+  "status": "deleted",
+  "id": "test-abc123"
+}
+```
+
+## Notes
+
+- Deleting a test will immediately stop all scheduled executions.
+- Execution history and logs for the test are retained (unless configured otherwise).
+- This operation cannot be undone. You will need to redeploy the test if you want to restore it.
+
+## Error Responses
+
+<ResponseField name="404" body="body">
+  <ParamField body="error" path="body.error" type="object">
+    <ParamField body="code" path="body.error.code" type="string">
+      "TEST_NOT_FOUND"
+    </ParamField>
+    <ParamField body="message" path="body.error.message" type="string">
+      Test not found message.
+    </ParamField>
+  </ParamField>
+</ResponseField>

@@ -1,43 +1,41 @@
-# Mintlify Starter Kit
+# Griffin Documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+Documentation for the Griffin API testing framework.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+Griffin is an open-source project that allows developers to create API tests with code and run those tests against their production APIs. It's like Datadog Synthetics, but it lives in your codebase.
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+## Repository
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+- **Main Repository**: [griffin-open-source/griffin](https://github.com/griffin-open-source/griffin)
+- **Documentation Site**: This repository
 
 ## Development
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally:
 
-```
+```bash
 npm i -g mint
 ```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+Run the development server:
 
-```
+```bash
 mint dev
 ```
 
 View your local preview at `http://localhost:3000`.
 
-## Publishing changes
+## Publishing Changes
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+Changes are automatically deployed when pushed to the main branch (if configured with Mintlify).
 
-## Need help?
+## Documentation Structure
 
-### Troubleshooting
+- **Getting Started**: Introduction, quickstart, and development setup
+- **Core Concepts**: Architecture, test system, CLI, executor, and runner guides
+- **API Reference**: Complete REST API documentation for the runner service
 
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
+## Resources
 
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+- [Griffin Repository](https://github.com/griffin-open-source/griffin)
+- [Mintlify Documentation](https://mintlify.com/docs)

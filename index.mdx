@@ -1,97 +1,128 @@
 ---
 title: "Introduction"
-description: "Welcome to the new home for your documentation"
+description: "API testing framework that lives in your codebase"
 ---
 
-## Setting up
+## What is Griffin?
 
-Get your documentation site up and running in minutes.
+Griffin is an open-source project that allows developers to create API tests with code and run those tests against their production APIs. It's like Datadog Synthetics, but it lives in your codebase.
 
 <Card
-  title="Start here"
+  title="Get started"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Follow our quickstart guide to create your first API test.
 </Card>
 
-## Make it yours
+## Key Features
 
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
+Griffin provides everything you need to build comprehensive API test suites.
 
 <Columns cols={2}>
   <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
+    title="TypeScript DSL"
     icon="code"
-    href="/essentials/code"
+    href="/guides/test-system"
   >
-    Add sample code to demonstrate how to use your product.
+    Write tests using a powerful, chainable TypeScript API.
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="Local Development"
+    icon="laptop-code"
+    href="/guides/cli"
   >
-    Display images and other media.
+    Run tests locally against development servers during development.
   </Card>
   <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
+    title="Production Monitoring"
+    icon="chart-line"
+    href="/guides/runner"
   >
-    Write once and reuse across your docs.
+    Schedule and execute tests against production APIs automatically.
+  </Card>
+  <Card
+    title="Graph-Based Execution"
+    icon="diagram-project"
+    href="/guides/architecture"
+  >
+    Build complex test flows with endpoints, waits, and assertions.
   </Card>
 </Columns>
 
-## Need inspiration?
+## Architecture
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+Griffin consists of four main components that work together:
+
+<Columns cols={2}>
+  <Card
+    title="CLI Tool"
+    icon="terminal"
+    href="/guides/cli"
+  >
+    Discover and run tests locally, configure runners, and deploy tests.
+  </Card>
+  <Card
+    title="Test System"
+    icon="file-code"
+    href="/guides/test-system"
+  >
+    TypeScript DSL for defining API tests and generating test plans.
+  </Card>
+  <Card
+    title="Plan Executor"
+    icon="play"
+    href="/guides/executor"
+  >
+    Executes JSON test plans with graph-based flow control.
+  </Card>
+  <Card
+    title="Runner Service"
+    icon="server"
+    href="/guides/runner"
+  >
+    Orchestration service that schedules and executes tests.
+  </Card>
+</Columns>
+
+## Quick Example
+
+Here's a simple API test written with Griffin:
+
+```typescript
+import { GET, ApiCheckBuilder, JSON, START, END, Frequency } from "griffin-test-system";
+
+const builder = new ApiCheckBuilder({
+  name: "health-check",
+  endpoint_host: "http://localhost:3000"
+});
+
+const plan = builder
+  .addEndpoint("health", { 
+    method: GET, 
+    response_format: JSON, 
+    path: "/health" 
+  })
+  .addEdge(START, "health")
+  .addEdge("health", END);
+
+plan.create({ frequency: Frequency.every(1).minute() });
+```
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running in minutes.
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/guides/architecture">
+    Understand how Griffin works.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/guides/cli">
+    Learn all CLI commands.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Explore the Runner API.
+  </Card>
+</CardGroup>

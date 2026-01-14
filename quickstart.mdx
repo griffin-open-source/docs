@@ -1,80 +1,135 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Get started with Griffin in minutes"
 ---
 
 ## Get started in three steps
 
-Get your documentation site running locally and make your first customization.
+Create your first API test and run it locally against your development server.
 
-### Step 1: Set up your local environment
+### Step 1: Install Griffin CLI
 
 <AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+  <Accordion icon="download" title="Install via npm">
+    Install the Griffin CLI globally using npm:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
+    ```bash
+    npm install -g griffin-cli
+    ```
+    
+    Or use `npx` to run it without installing:
+    
+    ```bash
+    npx griffin-cli run-local
+    ```
   </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+  <Accordion icon="code-branch" title="Build from source">
+    If you're working with the Griffin repository directly:
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
+    ```bash
+    cd griffin-cli
+    npm install
+    npm run build
+    ```
+    
+    Then run the CLI from the build directory:
+    
+    ```bash
+    node dist/cli.js run-local
+    ```
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Deploy your changes
+### Step 2: Create your first test
 
 <AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+  <Accordion icon="file-code" title="Create a test file">
+    Create a test file in a `__griffin__` subdirectory:
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
+    ```bash
+    mkdir -p __griffin__
+    touch __griffin__/my-first-test.ts
+    ```
+    
+    <Tip>Griffin automatically discovers `.ts` test files in `__griffin__` subdirectories.</Tip>
+  </Accordion>
+  <Accordion icon="pen-to-square" title="Write your test">
+    Add the following code to your test file:
+    
+    ```typescript
+    import { GET, ApiCheckBuilder, JSON, START, END, Frequency } from "griffin-test-system";
+    
+    const builder = new ApiCheckBuilder({
+      name: "my-first-check",
+      endpoint_host: "http://localhost:3000"  // Your API server URL
+    });
+    
+    const plan = builder
+      .addEndpoint("health", { 
+        method: GET, 
+        response_format: JSON, 
+        path: "/health" 
+      })
+      .addEdge(START, "health")
+      .addEdge("health", END);
+    
+    plan.create({ frequency: Frequency.every(1).minute() });
+    ```
+    
+    <Warning>Make sure to update `endpoint_host` with your actual API server URL and port.</Warning>
   </Accordion>
 </AccordionGroup>
 
-### Step 3: Go live
+### Step 3: Run your test
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+<AccordionGroup>
+  <Accordion icon="play" title="Start your API server">
+    Make sure your API server is running. For example, if using the sample API:
+    
+    ```bash
+    cd sample-apis
+    npm install
+    npm run dev
+    ```
+    
+    This starts the server on `http://localhost:3000` (or your configured port).
+  </Accordion>
+  <Accordion icon="rocket" title="Run tests locally">
+    Run all discovered tests:
+    
+    ```bash
+    griffin run-local
+    ```
+    
+    Or if using npx:
+    
+    ```bash
+    npx griffin-cli run-local
+    ```
+    
+    Griffin will discover all test files in `__griffin__` directories and execute them against their configured endpoint hosts.
+  </Accordion>
+</AccordionGroup>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you have your first test running, explore these features:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Test System Guide" icon="code" href="/guides/test-system">
+    Learn the full TypeScript DSL for building complex tests.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/guides/cli">
+    Discover all CLI commands and options.
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/guides/architecture">
+    Understand how Griffin components work together.
+  </Card>
+  <Card title="Production Setup" icon="server" href="/guides/runner">
+    Set up scheduled test execution in production.
+  </Card>
 </CardGroup>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  **Need help?** Check out the [architecture guide](/guides/architecture) or visit the [GitHub repository](https://github.com/griffin-open-source/griffin).
 </Note>

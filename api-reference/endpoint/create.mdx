@@ -1,4 +1,75 @@
 ---
-title: 'Create Plant'
-openapi: 'POST /plants'
+title: 'Execute Test'
+description: 'Manually trigger a test execution'
 ---
+
+## Execute Test
+
+Manually trigger an immediate execution of a test, bypassing the normal schedule.
+
+<ParamField path="testId" type="string" required>
+  The unique identifier or name of the test to execute.
+</ParamField>
+
+<ResponseField name="200" body="body">
+  <ParamField body="execution_id" path="body.execution_id" type="string">
+    Unique identifier for this execution.
+  </ParamField>
+  <ParamField body="status" path="body.status" type="string">
+    Initial execution status: "running", "queued".
+  </ParamField>
+  <ParamField body="test_id" path="body.test_id" type="string">
+    Identifier of the test being executed.
+  </ParamField>
+  <ParamField body="triggered_at" path="body.triggered_at" type="string">
+    ISO 8601 timestamp when execution was triggered.
+  </ParamField>
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X POST https://runner.example.com/api/tests/health-check/execute \
+  -H "X-API-Key: your-api-key"
+```
+
+## Example Response
+
+```json
+{
+  "execution_id": "exec-xyz789",
+  "status": "running",
+  "test_id": "test-abc123",
+  "triggered_at": "2024-01-15T10:20:00Z"
+}
+```
+
+## Notes
+
+- Manual executions do not affect the normal schedule. The next scheduled execution will still occur at its configured time.
+- You can check the execution status using the execution ID with the logs endpoint.
+- Multiple manual executions can be triggered simultaneously, but be aware of rate limits and resource constraints.
+
+## Error Responses
+
+<ResponseField name="404" body="body">
+  <ParamField body="error" path="body.error" type="object">
+    <ParamField body="code" path="body.error.code" type="string">
+      "TEST_NOT_FOUND"
+    </ParamField>
+    <ParamField body="message" path="body.error.message" type="string">
+      Test not found message.
+    </ParamField>
+  </ParamField>
+</ResponseField>
+
+<ResponseField name="429" body="body">
+  <ParamField body="error" path="body.error" type="object">
+    <ParamField body="code" path="body.error.code" type="string">
+      "RATE_LIMIT_EXCEEDED"
+    </ParamField>
+    <ParamField body="message" path="body.error.message" type="string">
+      Too many executions triggered. Please wait before triggering another execution.
+    </ParamField>
+  </ParamField>
+</ResponseField>

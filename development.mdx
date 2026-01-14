@@ -1,94 +1,230 @@
 ---
 title: 'Development'
-description: 'Preview changes locally to update your docs'
+description: 'Set up Griffin for local development'
 ---
 
 <Info>
   **Prerequisites**:
-  - Node.js version 19 or higher
-  - A docs repository with a `docs.json` file
+  - Node.js version 18 or higher
+  - TypeScript
+  - Access to the [Griffin repository](https://github.com/griffin-open-source/griffin)
 </Info>
 
-Follow these steps to install and run Mintlify on your operating system.
+Follow these steps to set up Griffin for local development and contribute to the project.
 
 <Steps>
-<Step title="Install the Mintlify CLI">
+<Step title="Clone the repository">
 
 ```bash
-npm i -g mint
+git clone https://github.com/griffin-open-source/griffin.git
+cd griffin
 ```
 </Step>
 
-<Step title="Preview locally">
+<Step title="Build the TypeScript projects">
 
-Navigate to your docs directory where your `docs.json` file is located, and run the following command:
+Griffin consists of multiple TypeScript packages. Build them in order:
 
 ```bash
-mint dev
+# Build the test system DSL
+cd griffin-test-system
+npm install
+npm run build
+
+# Build the plan executor
+cd ../griffin-plan-executor
+npm install
+npm run build
+
+# Build the CLI
+cd ../griffin-cli
+npm install
+npm run build
 ```
 
-A local preview of your documentation will be available at `http://localhost:3000`.
+</Step>
+
+<Step title="Set up the sample API (optional)">
+
+For testing Griffin functionality, you can run the sample API server:
+
+```bash
+cd sample-apis
+npm install
+npm run dev
+```
+
+This starts a simple JSON API server on `http://localhost:3000` with basic CRUD operations.
+
+</Step>
+
+<Step title="Create and run a test">
+
+Create a test file in a `__griffin__` directory:
+
+```typescript
+// __griffin__/dev-test.ts
+import { GET, ApiCheckBuilder, JSON, START, END, Frequency } from "../griffin-test-system/src/index";
+
+const builder = new ApiCheckBuilder({
+  name: "dev-check",
+  endpoint_host: "http://localhost:3000"
+});
+
+const plan = builder
+  .addEndpoint("health", { 
+    method: GET, 
+    response_format: JSON, 
+    path: "/health" 
+  })
+  .addEdge(START, "health")
+  .addEdge("health", END);
+
+plan.create({ frequency: Frequency.every(1).minute() });
+```
+
+Run the test using the built CLI:
+
+```bash
+node griffin-cli/dist/cli.js run-local
+```
 
 </Step>
 </Steps>
 
-## Custom ports
+## Project Structure
 
-By default, Mintlify uses port 3000. You can customize the port Mintlify runs on by using the `--port` flag. For example, to run Mintlify on port 3333, use this command:
+Griffin is organized into separate packages:
 
-```bash
-mint dev --port 3333
-```
+<AccordionGroup>
+  <Accordion title="griffin-test-system">
+    The TypeScript DSL library for defining API tests. Tests are written in TypeScript and output JSON test plans.
+    
+    **Location**: `griffin-test-system/`
+    
+    **Key files**:
+    - `src/index.ts` - Main exports
+    - `src/ApiCheckBuilder.ts` - Builder class for test plans
+  </Accordion>
 
-If you attempt to run Mintlify on a port that's already in use, it will use the next available port:
+  <Accordion title="griffin-plan-executor">
+    Executes JSON test plans. Can run tests locally or remotely (e.g., in a Lambda function).
+    
+    **Location**: `griffin-plan-executor/`
+    
+    **Key files**:
+    - `src/executor.ts` - Main execution logic
+    - `src/graph.ts` - Graph-based execution following edges
+  </Accordion>
 
-```md
-Port 3000 is already in use. Trying 3001 instead.
-```
+  <Accordion title="griffin-cli">
+    CLI tool for discovering tests, running them locally, and managing remote execution.
+    
+    **Location**: `griffin-cli/`
+    
+    **Key files**:
+    - `src/cli.ts` - CLI entry point
+    - `src/discovery.ts` - Test file discovery
+  </Accordion>
 
-## Mintlify versions
+  <Accordion title="griffin-runner">
+    Orchestration service for scheduling and executing tests. Stores results in PostgreSQL.
+    
+    **Location**: `griffin-runner/`
+    
+    **Key files**:
+    - API endpoints for test management
+    - Scheduler for frequency-based execution
+  </Accordion>
+</AccordionGroup>
 
-Please note that each CLI release is associated with a specific version of Mintlify. If your local preview does not align with the production version, please update the CLI:
+## Development Workflow
 
-```bash
-npm mint update
-```
+### Running Tests Locally
 
-## Validating links
+1. Start your API server (or use the sample API)
+2. Create test files in `__griffin__` directories
+3. Run `node griffin-cli/dist/cli.js run-local` to execute all discovered tests
 
-The CLI can assist with validating links in your documentation. To identify any broken links, use the following command:
+### Making Changes
 
-```bash
-mint broken-links
-```
+When making changes to the codebase:
 
-## Deployment
+1. Make your changes in the relevant package
+2. Rebuild the package: `npm run build`
+3. If you changed `griffin-test-system`, rebuild it first as other packages depend on it
+4. Test your changes by running the CLI
 
-If the deployment is successful, you should see the following:
+### Test File Discovery
 
-<Frame>
-  <img src="/images/checks-passed.png" alt="Screenshot of a deployment confirmation message that says All checks have passed." style={{ borderRadius: '0.5rem' }} />
-</Frame>
+Griffin discovers test files by:
+- Looking for `__griffin__` subdirectories
+- Finding all `.ts` files within those directories
+- Each test file should export a test plan created with `ApiCheckBuilder`
 
-## Code formatting
+## Current Status
 
-We suggest using extensions on your IDE to recognize and format MDX. If you're a VSCode user, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
+<Warning>
+  Some features are still in development. Check the repository README for the latest status.
+</Warning>
+
+✅ **Working**:
+- CLI test discovery and execution
+- TypeScript DSL for creating test plans
+- JSON plan execution with endpoints and waits
+- Local test execution against development servers
+
+🚧 **In Development**:
+- Assertion evaluation (structure in place, needs implementation)
+- Remote runner deployment
+- Test scheduling and orchestration
+- Log viewing and remote execution
+
+## Contributing
+
+<Note>
+  Contributions are welcome! Please check the repository for contribution guidelines and open issues.
+</Note>
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title='Error: Could not load the "sharp" module using the darwin-arm64 runtime'>
-
-    This may be due to an outdated version of node. Try the following:
-    1. Remove the currently-installed version of the CLI: `npm remove -g mint`
-    2. Upgrade to Node v19 or higher.
-    3. Reinstall the CLI: `npm i -g mint`
+  <Accordion title="Tests not being discovered">
+    Make sure:
+    - Test files are in `__griffin__` subdirectories
+    - Files have `.ts` extension
+    - Test files properly import and use `ApiCheckBuilder`
   </Accordion>
 
-  <Accordion title="Issue: Encountering an unknown error">
-  
-    Solution: Go to the root of your device and delete the `~/.mintlify` folder. Then run `mint dev` again.
+  <Accordion title="Build errors">
+    Ensure all dependencies are installed:
+    
+    ```bash
+    # In each package directory
+    npm install
+    npm run build
+    ```
+    
+    Build packages in dependency order: test-system → plan-executor → cli
+  </Accordion>
+
+  <Accordion title="Import errors in test files">
+    When developing locally, you may need to use relative paths to import from `griffin-test-system`:
+    
+    ```typescript
+    import { ... } from "../griffin-test-system/src/index";
+    ```
+    
+    Once published, you'll be able to use:
+    
+    ```typescript
+    import { ... } from "griffin-test-system";
+    ```
   </Accordion>
 </AccordionGroup>
-
-Curious about what changed in the latest CLI version? Check out the [CLI changelog](https://www.npmjs.com/package/mintlify?activeTab=versions).
