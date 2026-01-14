@@ -73,7 +73,7 @@
   "navbar": {
     "links": [],
     "primary": {
-      "type": "link",
+      "type": "github",
       "label": "GitHub",
       "href": "https://github.com/griffin-open-source/griffin"
     }
