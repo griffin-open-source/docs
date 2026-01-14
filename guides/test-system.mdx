@@ -119,6 +119,10 @@ builder.addEndpoint("authenticated", {
 });
 ```
 
+## Secrets
+
+When authentication or credentials are required, reference secrets by name and let the runner resolve them at execution time. This keeps sensitive values out of test files while still allowing authenticated checks. See the [Secret Management guide](/guides/secret-management) for provider details.
+
 ### Request Body
 
 ```typescript

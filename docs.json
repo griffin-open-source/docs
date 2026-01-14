@@ -28,7 +28,8 @@
               "guides/test-system",
               "guides/cli",
               "guides/executor",
-              "guides/runner"
+              "guides/runner",
+              "guides/secret-management"
             ]
           }
         ]
