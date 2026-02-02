@@ -26,70 +26,77 @@ Griffin provides everything you need to build comprehensive API test suites.
     icon="code"
     href="/guides/test-system"
   >
-    Write tests using a powerful, chainable TypeScript API.
+    Write tests using sequential or graph-based builders with full TypeScript support.
   </Card>
   <Card
-    title="Local Development"
-    icon="laptop-code"
-    href="/guides/cli"
+    title="Hub-Agent Architecture"
+    icon="network-wired"
+    href="/guides/architecture"
   >
-    Run tests locally against development servers during development.
+    Distributed test execution across multiple geographic locations with health monitoring.
   </Card>
   <Card
-    title="Production Monitoring"
+    title="Event-Driven Analytics"
     icon="chart-line"
     href="/guides/runner"
   >
-    Schedule and execute tests against production APIs automatically.
+    Full observability with event streaming to Kinesis, S3 data lakes, and real-time alerting.
   </Card>
   <Card
-    title="Graph-Based Execution"
-    icon="diagram-project"
+    title="Multi-Location Execution"
+    icon="globe"
     href="/guides/architecture"
   >
-    Build complex test flows with endpoints, waits, and assertions.
+    Deploy agents in multiple regions to test from different geographic locations.
   </Card>
   <Card
     title="Secret Management"
     icon="shield-keyhole"
     href="/guides/secret-management"
   >
-    Keep credentials out of test files with runtime secret resolution.
+    Support for env vars, AWS Secrets Manager, and HashiCorp Vault with field extraction.
+  </Card>
+  <Card
+    title="OIDC Authentication"
+    icon="lock"
+    href="/guides/cli"
+  >
+    Secure CLI authentication with device authorization flow or API keys.
   </Card>
 </Columns>
 
 ## Architecture
 
-Griffin consists of four main components that work together:
+Griffin uses a hub-and-agent architecture for distributed test execution:
 
 <Columns cols={2}>
   <Card
-    title="CLI Tool"
+    title="griffin-cli"
     icon="terminal"
     href="/guides/cli"
   >
-    Discover and run tests locally, configure runners, and deploy tests.
+    Command-line tool for local test execution and hub management with OIDC auth.
   </Card>
   <Card
-    title="Test System"
+    title="griffin-ts"
     icon="file-code"
     href="/guides/test-system"
   >
-    TypeScript DSL for defining API tests and generating test plans.
+    TypeScript DSL with sequential and graph-based builders for defining monitors.
   </Card>
   <Card
-    title="Plan Executor"
+    title="griffin-executor"
     icon="play"
     href="/guides/executor"
   >
-    Executes JSON test plans with graph-based flow control.
+    Core execution engine with graph-based flow control and event emission.
   </Card>
   <Card
-    title="Runner Service"
+    title="griffin-hub"
     icon="server"
     href="/guides/runner"
   >
-    Orchestration service that schedules and executes tests.
+    Control plane that manages monitors, schedules jobs, and tracks agents.
   </Card>
 </Columns>
 
@@ -98,23 +105,23 @@ Griffin consists of four main components that work together:
 Here's a simple API test written with Griffin:
 
 ```typescript
-import { GET, ApiCheckBuilder, JSON, START, END, Frequency } from "griffin-test-system";
+import { createTestBuilder, GET, JSON, Assert, Frequency } from "griffin-ts";
 
-const builder = new ApiCheckBuilder({
+const monitor = createTestBuilder({
   name: "health-check",
   endpoint_host: "http://localhost:3000"
-});
-
-const plan = builder
-  .addEndpoint("health", { 
-    method: GET, 
-    response_format: JSON, 
-    path: "/health" 
+})
+  .endpoint("health", {
+    method: GET,
+    response_format: JSON,
+    path: "/health"
   })
-  .addEdge(START, "health")
-  .addEdge("health", END);
+  .assert((state) => [
+    Assert(state["health"].status).equals(200)
+  ])
+  .build({ frequency: Frequency.every(1).minute() });
 
-plan.create({ frequency: Frequency.every(1).minute() });
+export default monitor;
 ```
 
 ## Learn More

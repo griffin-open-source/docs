@@ -32,141 +32,194 @@ node dist/cli.js run-local
 
 ## Commands
 
-### `run-local`
+### Project Initialization
 
-Runs all discovered tests locally against their configured endpoint hosts.
+#### `init`
+
+Initializes Griffin in your project by creating necessary configuration files.
 
 ```bash
-griffin run-local
+griffin init
 ```
 
 **What it does**:
-1. Scans for `.ts` test files in `__griffin__` subdirectories
-2. Compiles each test file to generate JSON test plans
-3. Executes each test plan using the plan executor
-4. Displays results in the terminal
+- Creates `.griffin/` directory for state management
+- Sets up initial configuration structure
+- Prepares project for environment management
+
+#### `generate-key`
+
+Generates a secure API key for hub authentication.
+
+```bash
+griffin generate-key
+```
+
+### Environment Management
+
+#### `env list`
+
+Lists all configured environments.
+
+```bash
+griffin env list
+```
+
+#### `env add <name>`
+
+Adds a new environment.
+
+```bash
+griffin env add production
+griffin env add staging
+griffin env add dev
+```
+
+#### `env remove <name>`
+
+Removes an environment.
+
+```bash
+griffin env remove dev
+```
+
+### Local Execution
+
+#### `local run <environment>`
+
+Runs all discovered tests locally against the specified environment.
+
+```bash
+griffin local run dev
+griffin local run staging
+```
+
+**What it does**:
+1. Scans for test files matching `**/__griffin__/*.{ts,js}`
+2. Compiles TypeScript tests to JSON monitors
+3. Executes monitors using griffin-executor
+4. Displays results in terminal with detailed output
 
 **Example Output**:
 ```
-Discovering tests...
-Found 3 test files in __griffin__ directories
+Discovering monitors...
+Found 3 monitors in __griffin__ directories
 
-Running: health-check
+Running: health-check (dev)
   ✓ GET /health - 200 OK (45ms)
+  ✓ Assertion: status equals 200 - PASS
 
-Running: user-crud-flow
+Running: user-flow (dev)
   ✓ POST /users - 201 Created (120ms)
   ✓ GET /users/123 - 200 OK (30ms)
-  ✓ PUT /users/123 - 200 OK (50ms)
   ✓ DELETE /users/123 - 204 No Content (25ms)
 
-Running: api-smoke-test
-  ✓ GET /api/status - 200 OK (30ms)
-  ✗ GET /api/data - 500 Internal Server Error (200ms)
-
-Summary: 2 passed, 1 failed
+Summary: 2 passed, 0 failed
 ```
 
-**Options**:
-- `--verbose` or `-v`: Show detailed execution logs
-- `--filter <name>`: Run only tests matching the filter pattern
+#### `validate`
+
+Validates all discovered test files without executing them.
 
 ```bash
-griffin run-local --verbose
-griffin run-local --filter health
+griffin validate
 ```
 
-### `configure-runner-host` (Coming Soon)
+### Hub Authentication
 
-Configures the host URL for the remote runner service.
+#### `hub login`
 
-```bash
-griffin configure-runner-host <host>
-```
-
-**Example**:
-```bash
-griffin configure-runner-host https://runner.example.com
-```
-
-This stores the runner host configuration for use with other commands.
-
-### `deploy` (Coming Soon)
-
-Deploys all discovered tests to the configured runner service.
+Authenticates with hub using OIDC device authorization flow.
 
 ```bash
-griffin deploy
+griffin hub login
 ```
 
 **What it does**:
-1. Discovers all test files
-2. Compiles them to JSON test plans
-3. Sends test plans to the runner service
-4. Runner schedules tests based on their frequency configuration
+1. Initiates OIDC device flow
+2. Displays authorization URL and code
+3. Waits for user to complete authentication
+4. Stores credentials in `~/.griffin/credentials.json`
 
-**Options**:
-- `--dry-run`: Show what would be deployed without actually deploying
-- `--force`: Force deployment even if tests already exist
+#### `hub connect`
 
-```bash
-griffin deploy --dry-run
-griffin deploy --force
-```
-
-### `logs` (Coming Soon)
-
-Views execution logs for a specific test from the runner service.
+Authenticates with hub using API key.
 
 ```bash
-griffin logs <check-name>
-```
-
-**Example**:
-```bash
-griffin logs health-check
+griffin hub connect --url https://hub.example.com --token <api-key>
 ```
 
 **Options**:
-- `--tail`: Follow logs in real-time
-- `--limit <n>`: Show only the last N executions
+- `--url`: Hub base URL
+- `--token`: API key for authentication
+
+#### `hub status`
+
+Shows current hub connection status.
 
 ```bash
-griffin logs health-check --tail
-griffin logs health-check --limit 10
+griffin hub status
 ```
 
-### `list` (Coming Soon)
+### Hub Management
 
-Lists all tests deployed to the runner service.
+#### `hub apply <environment>`
+
+Deploys monitors to the hub for the specified environment.
 
 ```bash
-griffin list
+griffin hub apply production
+griffin hub apply staging
+```
+
+**What it does**:
+1. Discovers and compiles all monitors
+2. Uploads monitors to hub via REST API
+3. Hub scheduler begins executing monitors based on frequency
+
+#### `hub monitor <environment>`
+
+Lists all monitors deployed to hub for an environment.
+
+```bash
+griffin hub monitor production
 ```
 
 **Example Output**:
 ```
-Deployed Tests:
-  - health-check (every 1 minute)
-  - user-crud-flow (every 15 minutes)
-  - api-smoke-test (every 1 hour)
+Monitors (production):
+  - health-check (every 1 minute, location: us-east-1)
+  - api-integration (every 15 minutes, location: eu-west-1)
+  - smoke-test (every 1 hour, location: us-west-2)
 ```
 
-### `status` (Coming Soon)
+#### `hub runs [--limit N]`
 
-Shows the status of a specific test or all tests.
+Views execution run history from the hub.
 
 ```bash
-griffin status
-griffin status <check-name>
+griffin hub runs
+griffin hub runs --limit 20
 ```
+
+**Options**:
+- `--limit`: Number of runs to display (default: 10)
 
 **Example Output**:
 ```
-Test Status:
-  health-check: ✓ Running (last execution: 2 minutes ago)
-  user-crud-flow: ✓ Running (last execution: 5 minutes ago)
-  api-smoke-test: ✗ Failed (last execution: 1 hour ago)
+Recent Runs:
+  health-check - SUCCESS - 2 minutes ago (us-east-1)
+  api-integration - SUCCESS - 5 minutes ago (eu-west-1)
+  health-check - SUCCESS - 3 minutes ago (us-east-1)
+  smoke-test - FAILURE - 1 hour ago (us-west-2)
+```
+
+#### `hub run <environment> --monitor <name>`
+
+Triggers manual execution of a specific monitor.
+
+```bash
+griffin hub run production --monitor health-check
 ```
 
 ## Test Discovery
@@ -197,70 +250,103 @@ All test files in any `__griffin__` directory will be discovered and executed.
 ### Test File Requirements
 
 Each test file must:
-- Be a TypeScript (`.ts`) file
-- Import from `griffin-test-system`
-- Use `ApiCheckBuilder` to create a test plan
-- Call `plan.create()` to register the test
+- Be a TypeScript (`.ts`) or JavaScript (`.js`) file
+- Import from `griffin-ts`
+- Use `createTestBuilder` or `createGraphBuilder`
+- Export the monitor as default export
 
 ```typescript
-// Valid test file
-import { GET, ApiCheckBuilder, JSON, START, END, Frequency } from "griffin-test-system";
+// Valid test file (Sequential Builder)
+import { createTestBuilder, GET, JSON, Assert, Frequency } from "griffin-ts";
 
-const builder = new ApiCheckBuilder({
+const monitor = createTestBuilder({
   name: "my-test",
   endpoint_host: "http://localhost:3000"
-});
+})
+  .endpoint("health", {
+    method: GET,
+    response_format: JSON,
+    path: "/health"
+  })
+  .assert((state) => [
+    Assert(state["health"].status).equals(200)
+  ])
+  .build({ frequency: Frequency.every(1).minute() });
 
-const plan = builder
+export default monitor;
+```
+
+```typescript
+// Valid test file (Graph Builder)
+import { createGraphBuilder, START, END, GET, JSON, Frequency } from "griffin-ts";
+
+const monitor = createGraphBuilder({
+  name: "complex-test",
+  endpoint_host: "http://localhost:3000"
+})
   .addEndpoint("health", { method: GET, response_format: JSON, path: "/health" })
   .addEdge(START, "health")
-  .addEdge("health", END);
+  .addEdge("health", END)
+  .build({ frequency: Frequency.every(5).minutes() });
 
-plan.create({ frequency: Frequency.every(1).minute() });
+export default monitor;
 ```
 
 ## Configuration
 
-### Runner Host Configuration
+### State Management
 
-The runner host is stored in a configuration file (typically `~/.griffin/config.json`):
-
-```json
-{
-  "runnerHost": "https://runner.example.com"
-}
-```
-
-This can be set using:
-```bash
-griffin configure-runner-host <host>
-```
-
-### Project Configuration
-
-You can create a `griffin.config.json` file in your project root:
+Griffin stores state in `.griffin/state.json` in your project:
 
 ```json
 {
-  "testDirectories": ["__griffin__", "__tests__/griffin"],
-  "defaultEndpointHost": "http://localhost:3000",
-  "timeout": 30000
+  "hubUrl": "https://hub.example.com",
+  "environments": ["dev", "staging", "production"],
+  "currentEnvironment": "dev"
 }
 ```
 
-**Options**:
-- `testDirectories`: Custom directories to scan for tests (default: `["__griffin__"]`)
-- `defaultEndpointHost`: Default host if not specified in test (optional)
-- `timeout`: Default timeout for test execution in milliseconds
+This file is automatically managed by CLI commands and should be committed to version control.
 
-## Environment Variables
+### Hub Configuration
 
-You can configure the CLI using environment variables:
+Hub connection details are stored in `~/.griffin/credentials.json`:
 
+```json
+{
+  "hubUrl": "https://hub.example.com",
+  "authMode": "oidc",
+  "accessToken": "<token>",
+  "refreshToken": "<token>",
+  "expiresAt": 1234567890
+}
+```
+
+**Security**: This file contains sensitive credentials and should never be committed to version control.
+
+### Environment-Specific Configuration
+
+Each environment can have different endpoint hosts configured in your monitors:
+
+```typescript
+const monitor = createTestBuilder({
+  name: "health-check",
+  endpoint_host: process.env.API_HOST || "http://localhost:3000"
+})
+  .endpoint("health", { method: GET, path: "/health" })
+  .build({ frequency: Frequency.every(1).minute() });
+```
+
+Use environment variables to configure different hosts per environment:
 ```bash
-GRIFFIN_RUNNER_HOST=https://runner.example.com
-GRIFFIN_TIMEOUT=30000
-GRIFFIN_VERBOSE=true
+# dev
+export API_HOST=http://localhost:3000
+
+# staging
+export API_HOST=https://staging-api.example.com
+
+# production
+export API_HOST=https://api.example.com
 ```
 
 ## Exit Codes
@@ -293,12 +379,13 @@ This makes it suitable for use in CI/CD pipelines:
 
 ### Import Errors
 
-**Problem**: `Cannot find module 'griffin-test-system'`
+**Problem**: `Cannot find module 'griffin-ts'`
 
 **Solutions**:
-- Install `griffin-test-system`: `npm install griffin-test-system`
-- For local development, use relative imports: `from "../griffin-test-system/src/index"`
+- Install `griffin-ts`: `npm install griffin-ts`
+- For local development in monorepo, use workspace linking
 - Ensure TypeScript can resolve the module
+- Check that the package is listed in `package.json`
 
 ### Connection Errors
 

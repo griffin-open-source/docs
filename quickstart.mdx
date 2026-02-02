@@ -55,27 +55,27 @@ Create your first API test and run it locally against your development server.
   </Accordion>
   <Accordion icon="pen-to-square" title="Write your test">
     Add the following code to your test file:
-    
+
     ```typescript
-    import { GET, ApiCheckBuilder, JSON, START, END, Frequency } from "griffin-test-system";
-    
-    const builder = new ApiCheckBuilder({
+    import { createTestBuilder, GET, JSON, Assert, Frequency } from "griffin-ts";
+
+    const monitor = createTestBuilder({
       name: "my-first-check",
       endpoint_host: "http://localhost:3000"  // Your API server URL
-    });
-    
-    const plan = builder
-      .addEndpoint("health", { 
-        method: GET, 
-        response_format: JSON, 
-        path: "/health" 
+    })
+      .endpoint("health", {
+        method: GET,
+        response_format: JSON,
+        path: "/health"
       })
-      .addEdge(START, "health")
-      .addEdge("health", END);
-    
-    plan.create({ frequency: Frequency.every(1).minute() });
+      .assert((state) => [
+        Assert(state["health"].status).equals(200)
+      ])
+      .build({ frequency: Frequency.every(1).minute() });
+
+    export default monitor;
     ```
-    
+
     <Warning>Make sure to update `endpoint_host` with your actual API server URL and port.</Warning>
   </Accordion>
 </AccordionGroup>
@@ -95,18 +95,25 @@ Create your first API test and run it locally against your development server.
     This starts the server on `http://localhost:3000` (or your configured port).
   </Accordion>
   <Accordion icon="rocket" title="Run tests locally">
-    Run all discovered tests:
-    
+    First, initialize Griffin in your project and create an environment:
+
     ```bash
-    griffin run-local
+    griffin init
+    griffin env add dev
     ```
-    
+
+    Then run all discovered tests for the dev environment:
+
+    ```bash
+    griffin local run dev
+    ```
+
     Or if using npx:
-    
+
     ```bash
-    npx griffin-cli run-local
+    npx griffin-cli local run dev
     ```
-    
+
     Griffin will discover all test files in `__griffin__` directories and execute them against their configured endpoint hosts.
   </Accordion>
 </AccordionGroup>
