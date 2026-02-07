@@ -1,0 +1,189 @@
+---
+title: "Self-Hosting Guide"
+description: "Deploy Griffin Hub on your own infrastructure"
+---
+
+This guide walks you through deploying Griffin Hub on your own infrastructure.
+
+## Prerequisites
+
+- **Node.js** 18+
+- **PostgreSQL** 14+
+- A server or container runtime (Docker, Kubernetes, etc.)
+
+## 1. Set up PostgreSQL
+
+Create a database for Griffin:
+
+```bash
+createdb griffin
+```
+
+Or using Docker:
+
+```bash
+docker run -d \
+  --name griffin-postgres \
+  -e POSTGRES_DB=griffin \
+  -e POSTGRES_USER=griffin \
+  -e POSTGRES_PASSWORD=your-password \
+  -p 5432:5432 \
+  postgres:16
+```
+
+## 2. Configure the hub
+
+Set the required environment variables:
+
+```bash
+# Required
+export DATABASE_URL="postgresql://griffin:your-password@localhost:5432/griffin"
+
+# Authentication (choose one)
+export AUTH_MODE="api-key"
+export AUTH_API_KEYS="your-api-key-here"
+
+# Or use OIDC
+# export AUTH_MODE="oidc"
+# export AUTH_OIDC_ISSUER="https://your-idp.example.com"
+```
+
+## 3. Run database migrations
+
+```bash
+cd griffin-hub
+npm install
+npm run db:push
+```
+
+## 4. Start the hub
+
+### Standalone mode (recommended for getting started)
+
+Runs the hub with a built-in executor — no separate agents needed:
+
+```bash
+npm run start:standalone
+```
+
+### Distributed mode
+
+Runs the hub as a control plane only. You'll need to start agents separately:
+
+```bash
+npm start
+```
+
+## 5. Generate an API key
+
+If using API key authentication:
+
+```bash
+griffin auth generate-key
+```
+
+Use this key with the CLI:
+
+```bash
+griffin auth connect --url http://your-hub:3000 --token YOUR_API_KEY
+```
+
+## 6. Deploy monitors
+
+```bash
+griffin plan
+griffin apply
+```
+
+## Running with Docker
+
+Example `docker-compose.yml`:
+
+```yaml
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: griffin
+      POSTGRES_USER: griffin
+      POSTGRES_PASSWORD: changeme
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  griffin-hub:
+    build: ./griffin-hub
+    environment:
+      DATABASE_URL: postgresql://griffin:changeme@postgres:5432/griffin
+      AUTH_MODE: api-key
+      AUTH_API_KEYS: "your-api-key"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    command: npm run start:standalone
+
+volumes:
+  pgdata:
+```
+
+## Distributed deployment
+
+For multi-region execution, run the hub separately from executor agents:
+
+### Hub
+
+```bash
+export DATABASE_URL="postgresql://..."
+export AUTH_MODE="api-key"
+export AUTH_API_KEYS="your-key"
+export PG_EXECUTOR_QUEUE_NAMES="us-east;eu-west"
+
+npm start
+```
+
+### Agent (on each executor machine)
+
+```bash
+export AGENT_LOCATION="us-east"
+export HUB_URL="https://hub.example.com"
+export QUEUE_BACKEND="postgres"
+export QUEUE_CONNECTION_STRING="postgresql://..."
+
+# Start the agent process
+node dist/agent.js
+```
+
+## Enabling secrets
+
+Configure a secret provider for resolving `secret()` references at execution time:
+
+```bash
+# Environment variables (default)
+export SECRET_PROVIDER="env"
+
+# AWS Secrets Manager
+export SECRET_PROVIDER="aws"
+export AWS_SECRETS_PREFIX="griffin/"
+
+# HashiCorp Vault
+export SECRET_PROVIDER="vault"
+export VAULT_ADDR="https://vault.example.com"
+export VAULT_TOKEN="hvs.your-token"
+```
+
+## Enabling notifications
+
+To send Slack notifications, configure OAuth credentials:
+
+```bash
+export INTEGRATIONS_ENCRYPTION_KEY="<64-char-hex-key>"
+export OAUTH_CALLBACK_BASE_URL="https://hub.example.com"
+export OAUTH_SLACK_CLIENT_ID="your-client-id"
+export OAUTH_SLACK_CLIENT_SECRET="your-client-secret"
+```
+
+Then connect the integration via the CLI:
+
+```bash
+griffin integrations connect notifications slack
+```

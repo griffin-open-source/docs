@@ -1,0 +1,51 @@
+---
+title: "Authentication"
+description: "Connect the CLI to Griffin Cloud or a self-hosted hub"
+---
+
+The CLI needs to authenticate with a hub before you can deploy monitors or view results.
+
+## Griffin Cloud
+
+```bash
+griffin auth login
+```
+
+Opens a browser-based device authorization flow. Once you authenticate, credentials are stored locally and used for all subsequent commands.
+
+```bash
+griffin auth logout
+```
+
+Clears stored credentials.
+
+## Self-hosted hub
+
+```bash
+griffin auth connect --url https://hub.example.com --token YOUR_API_KEY
+```
+
+| Option | Description |
+|--------|-------------|
+| `--url <url>` | Hub URL (required) |
+| `--token <token>` | API authentication token |
+
+The hub URL and token are stored in your project's local state.
+
+## Generating API keys
+
+For self-hosted hubs using API key authentication:
+
+```bash
+griffin auth generate-key
+```
+
+Generates a key in the format `grfn_sk_<48-char-hex>`. Configure this key on the hub via the `AUTH_API_KEYS` environment variable.
+
+## Checking connection status
+
+```bash
+griffin status
+```
+
+Shows your current project, connected hub, and authentication state.

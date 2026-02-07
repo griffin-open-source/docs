@@ -1,0 +1,99 @@
+---
+title: "Integrations"
+description: "Connect Griffin to external services"
+---
+
+Integrations connect Griffin to external services for notifications, secrets management, and metrics. They are configured per-environment and managed through the CLI.
+
+## Managing integrations
+
+```bash
+# List all integrations
+griffin integrations list
+
+# Filter by category
+griffin integrations list --category notifications
+
+# Show details for a specific integration
+griffin integrations show <id>
+
+# Connect a new integration
+griffin integrations connect
+
+# Remove an integration
+griffin integrations remove <id>
+```
+
+## Connecting an integration
+
+The `connect` command walks you through setup interactively, or you can specify the category and provider directly:
+
+```bash
+# Interactive
+griffin integrations connect
+
+# Direct
+griffin integrations connect notifications slack
+griffin integrations connect notifications email
+griffin integrations connect notifications webhook
+```
+
+## Existing integrations
+
+### Slack
+
+Send notification alerts to Slack channels. Uses OAuth for authentication — the CLI opens a browser to authorize access to your Slack workspace.
+
+```bash
+griffin integrations connect notifications slack
+```
+
+Once connected, reference Slack in your test notifications:
+
+```typescript
+notify.onFailure().toSlack("#api-alerts")
+```
+
+### Email
+
+Send notification alerts via email. Supports Resend and SES providers.
+
+```bash
+griffin integrations connect notifications email
+```
+
+```typescript
+notify.onFailure().toEmail(["team@example.com"])
+```
+
+### Webhooks
+
+Send notification payloads to any HTTP endpoint.
+
+```bash
+griffin integrations connect notifications webhook --name "my-webhook"
+```
+
+```typescript
+notify.onFailure().toWebhook("my-webhook")
+```
+
+## Testing an integration
+
+Verify that an integration is working by sending a test notification:
+
+```bash
+# Test a Slack integration
+griffin notifications test --integration slack --channel "#test"
+
+# Test an email integration
+griffin notifications test --integration email --to-addresses "you@example.com"
+```
+
+## Integration categories
+
+| Category | Purpose | Providers |
+|----------|---------|-----------|
+| **Notifications** | Alert delivery | Slack, Email, Webhook |
+| **Secrets** | Secret value resolution | AWS Secrets Manager, HashiCorp Vault |
+| **Metrics** | Metrics export | (Coming soon) |

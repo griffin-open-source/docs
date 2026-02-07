@@ -1,0 +1,202 @@
+---
+title: "Graph Builder"
+description: "Build complex test flows with explicit control over execution order"
+---
+
+The graph builder gives you full control over execution flow. You define nodes (HTTP requests, waits, assertions) and edges (the order they run in). This is the right choice when you need branching, parallel paths, or non-linear flows.
+
+For simple linear tests, see the [Sequential Builder](/writing-tests/sequential-builder).
+
+## Basic example
+
+```typescript
+import {
+  createGraphBuilder, HttpRequest, Assertion,
+  GET, Json, START, END, Frequency, Assert
+} from "griffin-ts";
+
+const monitor = createGraphBuilder({
+  name: "health-check",
+  frequency: Frequency.every(5).minutes(),
+})
+  .addNode("check", HttpRequest({
+    method: GET,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/health",
+  }))
+  .addEdge(START, "check")
+  .addEdge("check", END)
+  .build();
+
+export default monitor;
+```
+
+## Configuration
+
+```typescript
+createGraphBuilder({
+  name: "my-test",                          // Required: unique monitor name
+  frequency: Frequency.every(1).minute(),   // Required: how often to run
+  locations: ["us-east-1", "eu-west-1"],    // Optional: where to execute
+  notifications: [                          // Optional: alert rules
+    notify.onFailure().toSlack("#alerts"),
+  ],
+})
+```
+
+## Adding nodes
+
+Use `addNode(name, node)` to register steps. Three node types are available:
+
+### HTTP requests
+
+```typescript
+import { HttpRequest, GET, POST, Json } from "griffin-ts";
+
+builder.addNode("get-users", HttpRequest({
+  method: GET,
+  base: "https://api.example.com",
+  response_format: Json,
+  path: "/users",
+}))
+
+builder.addNode("create-user", HttpRequest({
+  method: POST,
+  base: "https://api.example.com",
+  response_format: Json,
+  path: "/users",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer token",
+  },
+  body: { name: "Test User", email: "test@example.com" },
+}))
+```
+
+**HttpRequest config:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `method` | `GET`, `POST`, `PUT`, `DELETE`, `PATCH` | Yes | HTTP method |
+| `base` | `string` or `variable()` | Yes | Base URL (e.g., `"https://api.example.com"`) |
+| `path` | `string` or `variable()` | Yes | URL path (e.g., `"/users"`) |
+| `response_format` | `Json`, `Xml`, `Text` | Yes | Expected response format |
+| `headers` | `Record<string, any>` | No | Request headers |
+| `body` | `any` | No | Request body |
+
+### Waits
+
+```typescript
+import { Wait } from "griffin-ts";
+
+builder.addNode("pause", Wait({ seconds: 2 }))
+
+// Also accepts:
+Wait(1000)            // milliseconds
+Wait({ minutes: 1 })  // minutes
+```
+
+### Assertions
+
+```typescript
+import { Assertion, Assert } from "griffin-ts";
+
+// Create a state proxy to reference previous node results
+import { createStateProxy } from "griffin-ts";
+const state = createStateProxy(["get-users"]);
+
+builder.addNode("validate", Assertion([
+  Assert(state["get-users"].status).equals(200),
+  Assert(state["get-users"].body["data"]).not.isEmpty(),
+]))
+```
+
+See [Assertions](/writing-tests/assertions) for the full assertion API.
+
+## Adding edges
+
+Edges define execution order. Use `addEdge(from, to)` with `START` and `END` constants:
+
+```typescript
+import { START, END } from "griffin-ts";
+
+builder
+  .addEdge(START, "create-user")   // Start with create
+  .addEdge("create-user", "pause") // Then wait
+  .addEdge("pause", "get-user")    // Then fetch
+  .addEdge("get-user", "validate") // Then assert
+  .addEdge("validate", END)        // Done
+```
+
+**Rules:**
+- Every graph must have at least one edge from `START`
+- Every graph must have at least one edge to `END`
+- Every node must have at least one incoming and one outgoing edge
+- The TypeScript compiler enforces these constraints — you'll get a type error if a node is unconnected
+
+## Compile-time safety
+
+The graph builder uses TypeScript's type system to catch errors at compile time:
+
+```typescript
+// Type error: "get-user" has no outgoing edge
+builder
+  .addNode("get-user", HttpRequest({ ... }))
+  .addEdge(START, "get-user")
+  .build()  // Error: "Some nodes have no outgoing edges"
+```
+
+## Complete example
+
+```typescript
+import {
+  createGraphBuilder, HttpRequest, Wait, Assertion,
+  GET, POST, DELETE, Json, START, END,
+  Frequency, Assert, createStateProxy, secret
+} from "griffin-ts";
+
+const state = createStateProxy(["create", "get", "delete"]);
+
+const monitor = createGraphBuilder({
+  name: "user-crud",
+  frequency: Frequency.every(15).minutes(),
+})
+  // Define steps
+  .addNode("create", HttpRequest({
+    method: POST,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users",
+    headers: { "Authorization": secret("API_KEY") },
+    body: { name: "Test User" },
+  }))
+  .addNode("pause", Wait({ seconds: 1 }))
+  .addNode("get", HttpRequest({
+    method: GET,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users/1",
+  }))
+  .addNode("validate", Assertion([
+    Assert(state["create"].status).equals(201),
+    Assert(state["get"].status).equals(200),
+    Assert(state["get"].body["name"]).equals("Test User"),
+  ]))
+  .addNode("delete", HttpRequest({
+    method: DELETE,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users/1",
+  }))
+  // Define flow
+  .addEdge(START, "create")
+  .addEdge("create", "pause")
+  .addEdge("pause", "get")
+  .addEdge("get", "validate")
+  .addEdge("validate", "delete")
+  .addEdge("delete", END)
+  .build();
+
+export default monitor;
+```

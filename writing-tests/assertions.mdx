@@ -1,0 +1,147 @@
+---
+title: "Assertions"
+description: "Validate API responses with a fluent assertion DSL"
+---
+
+Assertions let you validate HTTP responses — status codes, response bodies, headers, and latency. They use a fluent API that reads naturally:
+
+```typescript
+Assert(state["my-request"].status).equals(200)
+Assert(state["my-request"].body["name"]).not.isEmpty()
+```
+
+## Assertion subjects
+
+You can assert on four properties of any HTTP request node:
+
+### Status code
+
+```typescript
+Assert(state["req"].status).equals(200)
+Assert(state["req"].status).greaterThanOrEqual(200)
+Assert(state["req"].status).lessThan(300)
+```
+
+### Response body
+
+Access nested properties with bracket notation. Use `.at(index)` for array elements:
+
+```typescript
+// Simple property
+Assert(state["req"].body["message"]).equals("ok")
+
+// Nested property
+Assert(state["req"].body["data"]["user"]["name"]).equals("Alice")
+
+// Array element
+Assert(state["req"].body["items"].at(0)["id"]).isDefined()
+
+// Check the whole body
+Assert(state["req"].body["data"]).not.isEmpty()
+```
+
+### Headers
+
+```typescript
+Assert(state["req"].headers["content-type"]).contains("application/json")
+Assert(state["req"].headers["x-request-id"]).isDefined()
+```
+
+### Latency
+
+Latency is measured in milliseconds:
+
+```typescript
+Assert(state["req"].latency).lessThan(2000)
+Assert(state["req"].latency).lessThanOrEqual(500)
+```
+
+## Predicates
+
+### Comparison
+
+| Method | Description |
+|--------|-------------|
+| `.equals(value)` | Exact equality |
+| `.greaterThan(n)` | Greater than |
+| `.lessThan(n)` | Less than |
+| `.greaterThanOrEqual(n)` | Greater than or equal |
+| `.lessThanOrEqual(n)` | Less than or equal |
+
+### String
+
+| Method | Description |
+|--------|-------------|
+| `.contains(str)` | Contains substring |
+| `.startsWith(str)` | Starts with prefix |
+| `.endsWith(str)` | Ends with suffix |
+
+### Existence
+
+| Method | Description |
+|--------|-------------|
+| `.isNull()` | Value is null |
+| `.isDefined()` | Value is not null |
+| `.isEmpty()` | Value is empty (empty string, array, or object) |
+| `.isTrue()` | Value is true |
+| `.isFalse()` | Value is false |
+
+## Negation
+
+Prefix any predicate with `.not` to negate it:
+
+```typescript
+Assert(state["req"].body["error"]).not.isDefined()
+Assert(state["req"].status).not.equals(500)
+Assert(state["req"].body["name"]).not.isEmpty()
+Assert(state["req"].body["items"]).not.isNull()
+```
+
+## Using with the sequential builder
+
+The sequential builder provides a callback with a type-safe `state` proxy:
+
+```typescript
+builder
+  .request("users", { ... })
+  .assert((state) => [
+    Assert(state["users"].status).equals(200),
+    Assert(state["users"].body["count"]).greaterThan(0),
+  ])
+```
+
+The `state` proxy only exposes nodes that have been defined above the assertion, giving you compile-time autocomplete.
+
+## Using with the graph builder
+
+With the graph builder, create a state proxy manually using `createStateProxy`:
+
+```typescript
+import { createStateProxy, Assert, Assertion } from "griffin-ts";
+
+const state = createStateProxy(["get-users", "create-user"]);
+
+builder.addNode("validate", Assertion([
+  Assert(state["get-users"].status).equals(200),
+  Assert(state["create-user"].status).equals(201),
+]))
+```
+
+## Multiple assertions
+
+You can add multiple assertion nodes to validate different parts of your flow:
+
+```typescript
+builder
+  .request("create", { ... })
+  .assert((state) => [
+    Assert(state["create"].status).equals(201),
+  ])
+  .request("read", { ... })
+  .assert((state) => [
+    Assert(state["read"].status).equals(200),
+    Assert(state["read"].body["name"]).equals("Test"),
+  ])
+```
+
+A monitor run is marked as **failed** if any assertion in any assertion node fails.

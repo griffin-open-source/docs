@@ -1,0 +1,103 @@
+---
+title: "API Overview"
+description: "Griffin Hub REST API reference"
+---
+
+The Griffin Hub exposes a REST API for managing monitors, viewing runs, querying metrics, and more. The CLI uses this API internally — everything you can do with the CLI, you can also do via the API directly.
+
+## Base URL
+
+- **Griffin Cloud**: `https://api.griffin.dev`
+- **Self-hosted**: Your hub's URL (e.g., `http://localhost:3000`)
+
+## Authentication
+
+All API requests (except the health check) require authentication. See [Authentication](/api-reference/authentication) for details.
+
+## Response format
+
+All responses are JSON. Successful responses return the resource directly:
+
+```json
+{
+  "id": "mon_123",
+  "name": "health-check",
+  "frequency": { "every": 5, "unit": "MINUTE" }
+}
+```
+
+Error responses include a status code and message:
+
+```json
+{
+  "statusCode": 404,
+  "error": "Not Found",
+  "message": "Monitor not found"
+}
+```
+
+## Endpoints
+
+### Monitors
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/monitor` | Create a monitor |
+| `GET` | `/monitor` | List monitors |
+| `GET` | `/monitor/by-name` | Get monitor by name |
+| `PUT` | `/monitor/:id` | Update a monitor |
+| `DELETE` | `/monitor/:id` | Delete a monitor |
+
+### Runs
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/runs` | List runs |
+| `GET` | `/runs/:id` | Get a specific run |
+| `POST` | `/runs/trigger/:monitorId` | Trigger a manual run |
+
+### Metrics
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/metrics/summary` | Get metrics summary |
+| `GET` | `/metrics/monitors` | List monitors with metrics |
+| `GET` | `/metrics/monitors/:monitorId` | Get detailed monitor metrics |
+
+### Secrets
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/secrets` | List secrets |
+| `GET` | `/secrets/:name` | Get secret metadata |
+| `PUT` | `/secrets/:name` | Create or update a secret |
+| `DELETE` | `/secrets/:name` | Delete a secret |
+
+### Integrations
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/integrations` | List integrations |
+| `POST` | `/integrations` | Create an integration |
+| `GET` | `/integrations/:id` | Get an integration |
+| `PATCH` | `/integrations/:id` | Update an integration |
+| `DELETE` | `/integrations/:id` | Delete an integration |
+
+### Notifications
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/notifications/rules` | List notification rules |
+| `GET` | `/notifications/events` | List notification events |
+
+### Locations
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/locations` | Get available executor locations |
+
+### Health
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Health check (no auth required) |

@@ -1,0 +1,44 @@
+---
+title: "API Authentication"
+description: "Authenticating with the Griffin Hub API"
+---
+
+All API requests (except the health check endpoint) require authentication.
+
+## API key authentication
+
+For self-hosted hubs with `AUTH_MODE=api-key`, include the API key in the `Authorization` header:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://hub.example.com/monitor
+```
+
+API keys are configured on the hub via the `AUTH_API_KEYS` environment variable. Generate a key with:
+
+```bash
+griffin auth generate-key
+```
+
+## OIDC authentication
+
+For hubs with `AUTH_MODE=oidc` (including Griffin Cloud), include a JWT token from the configured OIDC provider:
+
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  https://hub.example.com/monitor
+```
+
+OIDC tokens include `organizationId` and `role` claims that determine access scope.
+
+## Error responses
+
+Unauthenticated requests return `401`:
+
+```json
+{
+  "statusCode": 401,
+  "error": "Unauthorized",
+  "message": "Missing or invalid authorization header"
+}
+```

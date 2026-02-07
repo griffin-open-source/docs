@@ -1,0 +1,167 @@
+---
+title: "Sequential Builder"
+description: "The simplest way to write linear API test flows"
+---
+
+The sequential builder is the easiest way to write Griffin tests. You add steps in order and edges are created automatically: `START → step 1 → step 2 → ... → END`.
+
+For tests that need branching or parallel paths, see the [Graph Builder](/writing-tests/graph-builder).
+
+## Basic example
+
+```typescript
+import { createTestBuilder, GET, Json, Assert, Frequency } from "griffin-ts";
+
+const monitor = createTestBuilder({
+  name: "health-check",
+  frequency: Frequency.every(1).minute(),
+})
+  .request("check", {
+    method: GET,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/health",
+  })
+  .assert((state) => [
+    Assert(state["check"].status).equals(200),
+  ])
+  .build();
+
+export default monitor;
+```
+
+## Configuration
+
+```typescript
+createTestBuilder({
+  name: "my-test",                          // Required: unique monitor name
+  frequency: Frequency.every(5).minutes(),  // Required: how often to run
+  locations: ["us-east-1"],                 // Optional: where to execute
+  notifications: [                          // Optional: alert rules
+    notify.onFailure().toSlack("#alerts"),
+  ],
+})
+```
+
+## Adding requests
+
+Use `.request(name, config)` to add an HTTP request step:
+
+```typescript
+builder
+  .request("get-users", {
+    method: GET,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users",
+  })
+  .request("create-user", {
+    method: POST,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users",
+    headers: { "Content-Type": "application/json" },
+    body: { name: "Test User" },
+  })
+```
+
+See the [Graph Builder](/writing-tests/graph-builder#http-requests) page for the full config reference.
+
+## Adding waits
+
+Use `.wait(name, duration)` to pause between steps:
+
+```typescript
+builder
+  .request("create", { ... })
+  .wait("pause", { seconds: 2 })
+  .request("verify", { ... })
+```
+
+Duration formats:
+- `1000` — milliseconds
+- `{ seconds: 2 }` — seconds
+- `{ minutes: 1 }` — minutes
+
+## Adding assertions
+
+Use `.assert(callback)` to validate results from previous steps. The callback receives a type-safe `state` proxy with autocomplete for all node names defined above it:
+
+```typescript
+builder
+  .request("get-users", {
+    method: GET,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users",
+  })
+  .assert((state) => [
+    // Check status code
+    Assert(state["get-users"].status).equals(200),
+
+    // Check response body
+    Assert(state["get-users"].body["data"]).not.isEmpty(),
+    Assert(state["get-users"].body["data"].at(0)["name"]).isDefined(),
+
+    // Check headers
+    Assert(state["get-users"].headers["content-type"]).contains("application/json"),
+
+    // Check latency
+    Assert(state["get-users"].latency).lessThan(2000),
+  ])
+```
+
+See [Assertions](/writing-tests/assertions) for the full assertion API.
+
+## Complete example
+
+A multi-step API test that creates a resource, verifies it, and cleans up:
+
+```typescript
+import {
+  createTestBuilder, GET, POST, DELETE, Json,
+  Assert, Frequency, secret
+} from "griffin-ts";
+
+const monitor = createTestBuilder({
+  name: "user-lifecycle",
+  frequency: Frequency.every(15).minutes(),
+})
+  .request("create", {
+    method: POST,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users",
+    headers: { "Authorization": secret("API_KEY") },
+    body: { name: "Test User", email: "test@example.com" },
+  })
+  .assert((state) => [
+    Assert(state["create"].status).equals(201),
+    Assert(state["create"].body["id"]).isDefined(),
+  ])
+  .wait("pause", { seconds: 1 })
+  .request("verify", {
+    method: GET,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users/1",
+    headers: { "Authorization": secret("API_KEY") },
+  })
+  .assert((state) => [
+    Assert(state["verify"].status).equals(200),
+    Assert(state["verify"].body["name"]).equals("Test User"),
+  ])
+  .request("cleanup", {
+    method: DELETE,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/users/1",
+    headers: { "Authorization": secret("API_KEY") },
+  })
+  .assert((state) => [
+    Assert(state["cleanup"].status).equals(204),
+  ])
+  .build();
+
+export default monitor;
+```
