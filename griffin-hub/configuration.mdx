@@ -1,0 +1,92 @@
+---
+title: "Configuration"
+description: "Environment variables for Griffin Hub"
+---
+
+Griffin Hub is configured through environment variables.
+
+## Database
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+
+## Authentication
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `AUTH_MODE` | No | `api-key` | Authentication mode: `api-key` or `oidc` |
+| `AUTH_API_KEYS` | If `api-key` | — | Semicolon-separated API keys |
+| `AUTH_OIDC_ISSUER` | If `oidc` | — | OIDC issuer URL |
+| `AUTH_OIDC_AUDIENCE` | No | — | OIDC audience (optional) |
+
+## Scheduler
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SCHEDULER_ENABLED` | No | `true` | Enable the scheduler |
+| `SCHEDULER_TICK_INTERVAL` | No | `30000` | Scheduler polling interval in ms |
+
+## Executor
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `EXECUTOR_QUEUE_BACKEND` | No | `postgres` | Queue backend: `postgres` or `sqs` |
+| `PG_EXECUTOR_QUEUE_NAMES` | No | `local` | Semicolon-separated queue names (Postgres backend) |
+| `SQS_EXECUTOR_QUEUES` | If `sqs` | — | SQS queues in `region\|url` format, semicolon-separated |
+| `MONITOR_EXECUTION_TIMEOUT` | No | `30000` | Execution timeout in ms |
+| `WORKER_EMPTY_DELAY` | No | `1000` | Initial delay when queue is empty (ms) |
+| `WORKER_MAX_EMPTY_DELAY` | No | `30000` | Max delay when queue is empty (ms) |
+
+## Secrets
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SECRET_PROVIDER` | No | `env` | Secret provider: `env`, `aws`, or `vault` |
+| `SECRET_ENV_PREFIX` | No | — | Prefix for env variable secret names |
+| `AWS_SECRETS_PREFIX` | No | — | Prefix for AWS Secrets Manager names |
+| `AWS_SECRETS_ROLE_ARN` | No | — | IAM role ARN for cross-account access |
+| `VAULT_ADDR` | If `vault` | — | HashiCorp Vault address |
+| `VAULT_TOKEN` | If `vault` | — | Vault authentication token |
+
+## Notifications
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `NOTIFICATION_QUEUE_BACKEND` | No | `postgres` | Queue backend: `postgres` or `sqs` |
+| `NOTIFICATION_SQS_QUEUE_URL` | If `sqs` | — | SQS queue URL for notifications |
+| `NOTIFICATION_SQS_REGION` | If `sqs` | — | AWS region for notification SQS queue |
+
+## Integrations
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `INTEGRATIONS_ENCRYPTION_KEY` | No | — | 64-character hex key for encrypting credentials |
+| `OAUTH_CALLBACK_BASE_URL` | No | — | Base URL for OAuth callbacks |
+| `OAUTH_SLACK_CLIENT_ID` | No | — | Slack OAuth client ID |
+| `OAUTH_SLACK_CLIENT_SECRET` | No | — | Slack OAuth client secret |
+
+## Platform (Cloud mode)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PLATFORM_SECRETS_ENABLED` | No | — | Enable platform secrets |
+| `PLATFORM_SECRETS_PROVIDER` | No | — | Platform secret provider |
+| `PLATFORM_SECRETS_AWS_REGION` | No | — | AWS region for platform secrets |
+| `PLATFORM_NOTIFICATIONS_ENABLED` | No | — | Enable platform notifications |
+| `PLATFORM_EMAIL_PROVIDER` | No | — | Email provider: `resend` or `ses` |
+| `PLATFORM_EMAIL_FROM_ADDRESS` | No | — | From address for email notifications |
+| `RESEND_API_KEY` | No | — | Resend API key |
+
+## Agent configuration (distributed mode)
+
+These variables are for executor agents running separately from the hub:
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `AGENT_LOCATION` | Yes | — | Location identifier for this agent |
+| `HUB_URL` | Yes | — | Hub API endpoint URL |
+| `QUEUE_BACKEND` | No | `postgres` | Queue backend: `postgres`, `sqs`, or `redis` |
+| `QUEUE_CONNECTION_STRING` | Yes | — | Backend-specific connection string |
+| `HEARTBEAT_ENABLED` | No | `true` | Enable heartbeat reporting |
+| `HEARTBEAT_INTERVAL_SECONDS` | No | `30` | Heartbeat interval |

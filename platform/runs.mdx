@@ -1,0 +1,58 @@
+---
+title: "Runs"
+description: "Viewing test execution history"
+---
+
+A run is a single execution of a monitor. Each time the scheduler triggers a monitor (or you trigger one manually), a new run is created.
+
+## Viewing runs
+
+```bash
+# Recent runs across all monitors
+griffin runs
+
+# Runs for a specific environment
+griffin runs production
+
+# Filter by monitor
+griffin runs --monitor health-check
+
+# Show more results
+griffin runs --limit 50
+```
+
+## Run details
+
+Each run tracks:
+
+| Field | Description |
+|-------|-------------|
+| **Status** | `pending`, `running`, `completed`, or `failed` |
+| **Triggered by** | `schedule` (automatic), `manual` (via CLI), or `api` |
+| **Started at** | When execution began |
+| **Completed at** | When execution finished |
+| **Duration** | Total execution time in milliseconds |
+| **Success** | Whether all assertions passed |
+| **Errors** | Any error messages from failed nodes |
+
+## Run statuses
+
+- **Pending** — The job is queued and waiting for an executor
+- **Running** — An executor is currently processing the monitor
+- **Completed** — Execution finished (check `success` for pass/fail)
+- **Failed** — Execution encountered an error (timeout, network failure, etc.)
+
+## Triggering runs manually
+
+```bash
+# Trigger a run
+griffin run --monitor my-test
+
+# Trigger and wait for results
+griffin run --monitor my-test --wait
+
+# Trigger in a specific environment
+griffin run production --monitor my-test
+```
+
+Manual runs execute immediately regardless of the monitor's frequency schedule.

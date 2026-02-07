@@ -1,0 +1,125 @@
+---
+title: "Notifications"
+description: "Get alerted when monitors fail"
+---
+
+Notifications let you receive alerts when your monitors fail, recover, or meet specific conditions. Configure them directly in your test files using the `notify` DSL.
+
+## Defining notifications
+
+Add notifications when creating your monitor:
+
+```typescript
+import { createTestBuilder, notify, Frequency, GET, Json } from "griffin-ts";
+
+const monitor = createTestBuilder({
+  name: "health-check",
+  frequency: Frequency.every(1).minute(),
+  notifications: [
+    notify.onFailure().toSlack("#alerts"),
+    notify.onRecovery().toEmail(["oncall@example.com"]),
+  ],
+})
+  .request("check", { ... })
+  .build();
+
+export default monitor;
+```
+
+Notifications are deployed with your monitor when you run `griffin apply`.
+
+## Trigger types
+
+### On failure
+
+Fires every time a run fails:
+
+```typescript
+notify.onFailure().toSlack("#alerts")
+```
+
+### On recovery
+
+Fires when a monitor succeeds after a failure:
+
+```typescript
+notify.onRecovery().toSlack("#alerts")
+```
+
+### On consecutive failures
+
+Fires after N consecutive failed runs:
+
+```typescript
+notify.onConsecutiveFailures(3).toSlack("#alerts")
+```
+
+### On success rate below threshold
+
+Fires when the success rate drops below a percentage over a time window:
+
+```typescript
+notify.onSuccessRateBelow(95, 60).toEmail(["team@example.com"])
+// 95% threshold over the last 60 minutes
+```
+
+### On latency above threshold
+
+Fires when latency exceeds a threshold at a given percentile:
+
+```typescript
+notify.onLatencyAbove({
+  threshold_ms: 2000,
+  percentile: "p95",
+  window_minutes: 30,
+}).toSlack("#performance")
+```
+
+## Delivery channels
+
+### Slack
+
+```typescript
+notify.onFailure().toSlack("#channel-name")
+```
+
+Requires a Slack integration. See [Integrations](/platform/integrations).
+
+### Email
+
+```typescript
+notify.onFailure().toEmail(["alice@example.com", "bob@example.com"])
+```
+
+Requires an email integration.
+
+### Webhook
+
+```typescript
+notify.onFailure().toWebhook("my-webhook-integration")
+```
+
+The argument is the name of a webhook integration.
+
+## Cooldowns
+
+Add a cooldown to prevent alert fatigue. The notification won't fire again within the cooldown period:
+
+```typescript
+notify.onFailure()
+  .withCooldown(15)  // 15 minutes
+  .toSlack("#alerts")
+```
+
+## Viewing notification activity
+
+```bash
+# List notification rules
+griffin notifications list
+
+# Filter by monitor
+griffin notifications list --monitor health-check
+
+# Send a test notification
+griffin notifications test --integration slack --channel "#test"
+```

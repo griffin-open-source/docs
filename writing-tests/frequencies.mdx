@@ -1,0 +1,71 @@
+---
+title: "Frequencies & Scheduling"
+description: "Control how often your monitors run"
+---
+
+Every monitor has a frequency that determines how often the hub schedules it for execution.
+
+## Setting a frequency
+
+Frequency is a required field in both builders:
+
+```typescript
+import { Frequency } from "griffin-ts";
+
+createTestBuilder({
+  name: "health-check",
+  frequency: Frequency.every(5).minutes(),
+})
+```
+
+## Available intervals
+
+```typescript
+Frequency.every(1).minute()    // Every minute
+Frequency.every(5).minutes()   // Every 5 minutes
+Frequency.every(15).minutes()  // Every 15 minutes
+
+Frequency.every(1).hour()      // Every hour
+Frequency.every(6).hours()     // Every 6 hours
+
+Frequency.every(1).day()       // Every day
+Frequency.every(7).days()      // Every 7 days
+```
+
+Both singular and plural forms work: `.minute()` and `.minutes()` are equivalent.
+
+## How scheduling works
+
+The hub's scheduler runs on a tick interval (default: 30 seconds). On each tick, it checks which monitors are due based on their frequency and last execution time, then enqueues jobs for execution.
+
+- A monitor with `Frequency.every(1).minute()` will be scheduled approximately every 60 seconds
+- The scheduler ensures no duplicate jobs are created for the same monitor within its frequency window
+- If an executor is unavailable, jobs queue up and execute when an executor becomes available
+
+## Choosing a frequency
+
+| Frequency | Good for |
+|-----------|----------|
+| Every 1 minute | Critical health checks, payment APIs, auth endpoints |
+| Every 5 minutes | Important API endpoints, core business flows |
+| Every 15 minutes | Standard monitoring, CRUD operations |
+| Every 1 hour | Low-priority checks, third-party API status |
+| Every 1 day | Periodic validation, data integrity checks |
+
+<Note>
+Higher frequencies mean more executions, which affects resource usage on self-hosted deployments and costs on Griffin Cloud.
+</Note>
+
+## Locations
+
+Optionally specify where your monitor should execute. In distributed mode, jobs are routed to executors running in the specified locations:
+
+```typescript
+createTestBuilder({
+  name: "global-check",
+  frequency: Frequency.every(5).minutes(),
+  locations: ["us-east-1", "eu-west-1"],
+})
+```
+
+When locations are specified, the scheduler creates separate jobs for each location on each run. If no locations are specified, the monitor runs on any available executor.

@@ -1,0 +1,59 @@
+---
+title: "Runs & Metrics"
+description: "View execution history and performance data"
+---
+
+## Viewing runs
+
+```bash
+# All recent runs
+griffin runs
+
+# For a specific environment
+griffin runs production
+
+# Filter by monitor
+griffin runs --monitor health-check
+
+# Show more results
+griffin runs --limit 50
+```
+
+## Triggering a run
+
+Trigger a monitor to run immediately without waiting for its schedule:
+
+```bash
+griffin run --monitor health-check
+
+# In a specific environment
+griffin run production --monitor health-check
+
+# Wait for completion and show results
+griffin run --monitor health-check --wait
+```
+
+## Viewing metrics
+
+```bash
+# Summary for the last 24 hours
+griffin metrics
+
+# For a specific environment
+griffin metrics production
+
+# Different time windows
+griffin metrics --period 1h
+griffin metrics --period 7d
+griffin metrics --period 30d
+
+# JSON output
+griffin metrics --json
+```
+
+The metrics summary includes:
+- Monitor counts (total, passing, failing)
+- Run counts and success rate
+- Latency percentiles (p50, p95, p99)
+- Overall uptime percentage
+- List of currently failing monitors

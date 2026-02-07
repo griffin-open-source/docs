@@ -1,0 +1,83 @@
+---
+title: "Environments"
+description: "CLI commands for managing environments"
+---
+
+## griffin env list
+
+List all configured environments.
+
+```bash
+griffin env list
+```
+
+## griffin env add
+
+Add a new environment.
+
+```bash
+griffin env add staging
+griffin env add production
+```
+
+## griffin env remove
+
+Remove an environment.
+
+```bash
+griffin env remove staging
+```
+
+<Note>
+Removing an environment locally does not delete monitors already deployed to the hub. Use `griffin apply <env> --prune` to clean up remote monitors.
+</Note>
+
+## griffin variables
+
+Manage per-environment variables.
+
+```bash
+# List variables
+griffin variables list --env production
+
+# Set a variable
+griffin variables add API_HOST=https://api.example.com --env production
+
+# Remove a variable
+griffin variables remove API_HOST --env production
+```
+
+| Option | Description |
+|--------|-------------|
+| `--env <name>` | Environment name (default: `default`) |
+
+## griffin secrets
+
+Manage per-environment secrets.
+
+```bash
+# List secrets
+griffin secrets list --env production
+
+# Set a secret (prompts for value)
+griffin secrets set API_KEY --env production
+
+# Set with inline value
+griffin secrets set API_KEY --value "sk-1234..." --env production
+
+# View metadata
+griffin secrets get API_KEY --env production
+
+# Delete
+griffin secrets delete API_KEY --env production
+griffin secrets delete API_KEY --env production --force
+```
+
+| Option | Description |
+|--------|-------------|
+| `--env <name>` | Environment name (default: `default`) |
+| `--value <value>` | Secret value (prompts if omitted) |
+| `--json` | JSON output (for `list` and `get`) |
+| `--force` | Skip confirmation (for `delete`) |
+
+See [Environments](/concepts/environments) for how environments, variables, and secrets work together.

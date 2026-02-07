@@ -1,0 +1,98 @@
+---
+title: "Environments"
+description: "Run the same monitors against different deployments"
+---
+
+Environments let you deploy the same monitors against different API deployments — for example, staging and production. Each environment has its own variables, secrets, and independent run history.
+
+## How environments work
+
+When you run `griffin init`, a `default` environment is created automatically. You can add more:
+
+```bash
+griffin env add staging
+griffin env add production
+```
+
+Each monitor is deployed to a specific environment. The same test file can be deployed to multiple environments with different configuration.
+
+## Variables
+
+Variables are scoped per environment. Use them to change values like base URLs between environments:
+
+```bash
+# Set different API hosts per environment
+griffin variables add API_HOST=https://api.staging.example.com --env staging
+griffin variables add API_HOST=https://api.example.com --env production
+```
+
+In your test files, reference variables with the `variable()` function:
+
+```typescript
+import { createTestBuilder, GET, Json, variable, Frequency } from "griffin-ts";
+
+const monitor = createTestBuilder({
+  name: "health-check",
+  frequency: Frequency.every(5).minutes(),
+})
+  .request("check", {
+    method: GET,
+    base: variable("API_HOST"),
+    response_format: Json,
+    path: "/health",
+  })
+  .build();
+
+export default monitor;
+```
+
+When you run `griffin apply staging`, the CLI resolves `variable("API_HOST")` to `https://api.staging.example.com`.
+
+## Secrets
+
+Secrets are also scoped per environment. See [Secrets](/writing-tests/secrets) for details.
+
+```bash
+griffin secrets set API_KEY --env staging
+griffin secrets set API_KEY --env production
+```
+
+## Deploying to environments
+
+Most CLI commands accept an environment argument:
+
+```bash
+# Deploy monitors to staging
+griffin apply staging
+
+# Preview changes for production
+griffin plan production
+
+# Run a specific monitor in staging
+griffin run staging --monitor health-check
+
+# View runs for production
+griffin runs production
+
+# View metrics for staging
+griffin metrics staging
+```
+
+When no environment is specified, commands use the `default` environment.
+
+## Managing environments
+
+```bash
+# List all environments
+griffin env list
+
+# Add an environment
+griffin env add <name>
+
+# Remove an environment
+griffin env remove <name>
+```
+
+<Note>
+Removing an environment locally does not delete monitors already deployed to the hub for that environment. Use `griffin apply <env> --prune` to clean up remote monitors.
+</Note>

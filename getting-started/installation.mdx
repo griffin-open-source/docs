@@ -1,0 +1,50 @@
+---
+title: "Installation"
+description: "Install the Griffin CLI"
+---
+
+## Install via npm
+
+```bash
+npm install -g griffin-cli
+```
+
+After installation, verify it works:
+
+```bash
+griffin --version
+```
+
+## Use without installing
+
+Run any Griffin command with `npx`:
+
+```bash
+npx griffin-cli test
+```
+
+## Initialize a project
+
+Navigate to your project directory and run:
+
+```bash
+griffin init
+```
+
+This creates a `griffin.json` configuration file in your project root. Griffin uses this to identify the project and track environments.
+
+<Tip>
+Griffin discovers test files in `__griffin__/` directories anywhere in your project tree. You can organize tests alongside the code they test.
+</Tip>
+
+## Requirements
+
+- **Node.js** 18 or later
+- **npm** 8 or later
+- A `__griffin__/` directory containing `.ts` test files
+
+## What's next
+
+<Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
+  Write and run your first API test.
+</Card>

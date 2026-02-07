@@ -1,0 +1,126 @@
+---
+title: "Monitors API"
+description: "Create, list, update, and delete monitors"
+---
+
+## Create a monitor
+
+<ParamField method="POST" path="/monitor" />
+
+Creates a new monitor.
+
+```bash
+curl -X POST https://hub.example.com/monitor \
+  -H "Authorization: Bearer YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "health-check",
+    "version": "1.0",
+    "project": "my-project",
+    "environment": "default",
+    "frequency": { "every": 5, "unit": "MINUTE" },
+    "nodes": [
+      {
+        "id": "check",
+        "type": "HTTP_REQUEST",
+        "method": "GET",
+        "base": { "$literal": "https://api.example.com" },
+        "path": { "$literal": "/health" },
+        "response_format": "JSON"
+      }
+    ],
+    "edges": [
+      { "from": "__START__", "to": "check" },
+      { "from": "check", "to": "__END__" }
+    ]
+  }'
+```
+
+**Response:** `201 Created`
+
+```json
+{
+  "id": "mon_abc123",
+  "name": "health-check",
+  "version": "1.0",
+  "project": "my-project",
+  "environment": "default",
+  "frequency": { "every": 5, "unit": "MINUTE" },
+  "nodes": [...],
+  "edges": [...]
+}
+```
+
+## List monitors
+
+<ParamField method="GET" path="/monitor" />
+
+Returns a paginated list of monitors.
+
+| Query Parameter | Type | Default | Description |
+|----------------|------|---------|-------------|
+| `projectId` | string | — | Filter by project |
+| `environment` | string | — | Filter by environment |
+| `limit` | number | 50 | Max results per page |
+| `offset` | number | 0 | Pagination offset |
+
+```bash
+curl "https://hub.example.com/monitor?projectId=my-project&environment=default" \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "data": [...],
+  "total": 12,
+  "page": 1
+}
+```
+
+## Get monitor by name
+
+<ParamField method="GET" path="/monitor/by-name" />
+
+Retrieve a specific monitor by project, environment, and name.
+
+| Query Parameter | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `projectId` | string | Yes | Project identifier |
+| `environment` | string | Yes | Environment name |
+| `name` | string | Yes | Monitor name |
+| `version` | string | No | `"latest"` or specific version |
+
+```bash
+curl "https://hub.example.com/monitor/by-name?projectId=my-project&environment=default&name=health-check" \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+## Update a monitor
+
+<ParamField method="PUT" path="/monitor/:id" />
+
+Updates an existing monitor by ID.
+
+```bash
+curl -X PUT https://hub.example.com/monitor/mon_abc123 \
+  -H "Authorization: Bearer YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ ... }'
+```
+
+**Response:** `200 OK` with the updated monitor.
+
+## Delete a monitor
+
+<ParamField method="DELETE" path="/monitor/:id" />
+
+Deletes a monitor by ID.
+
+```bash
+curl -X DELETE https://hub.example.com/monitor/mon_abc123 \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+**Response:** `204 No Content`

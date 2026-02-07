@@ -1,0 +1,100 @@
+---
+title: "Plan & Apply"
+description: "Preview and push changes to the hub"
+---
+
+The plan and apply workflow lets you preview changes before deploying them — similar to Terraform.
+
+## Plan
+
+`griffin plan` compares your local test files against what's deployed on the hub and shows the diff:
+
+```bash
+griffin plan
+griffin plan production
+```
+
+Example output:
+
+```
+Monitors to create:
+  + health-check
+  + user-crud
+
+Monitors to update:
+  ~ payment-flow (frequency changed)
+
+Monitors unchanged:
+  = auth-check
+
+2 to create, 1 to update, 1 unchanged
+```
+
+### CI/CD usage
+
+`griffin plan` exits with code **2** when there are pending changes and **0** when everything is in sync. This makes it useful in CI pipelines:
+
+```bash
+griffin plan || echo "Changes pending"
+```
+
+Use `--json` for machine-readable output:
+
+```bash
+griffin plan --json
+```
+
+## Apply
+
+`griffin apply` pushes your local monitors to the hub:
+
+```bash
+griffin apply
+griffin apply production
+```
+
+By default, it shows you what will change and asks for confirmation. Use flags to customize:
+
+```bash
+# Skip confirmation
+griffin apply --auto-approve
+
+# Preview without making changes
+griffin apply --dry-run
+
+# Delete monitors that no longer exist locally
+griffin apply --prune
+```
+
+### The prune flag
+
+Without `--prune`, `apply` only creates and updates monitors. Monitors that exist on the hub but not locally are left untouched.
+
+With `--prune`, monitors on the hub that don't have a corresponding local test file are deleted.
+
+```bash
+# Safe: only creates/updates
+griffin apply
+
+# Destructive: also deletes removed monitors
+griffin apply --prune
+```
+
+<Warning>
+Use `--prune` carefully. Always run `griffin plan` first to verify what will be deleted.
+</Warning>
+
+## Typical workflow
+
+```bash
+# 1. Write or modify test files in __griffin__/
+
+# 2. Test locally
+griffin test
+
+# 3. Preview changes
+griffin plan production
+
+# 4. Deploy
+griffin apply production
+```

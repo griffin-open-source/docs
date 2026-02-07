@@ -1,0 +1,85 @@
+---
+title: "Runs API"
+description: "View and trigger monitor runs"
+---
+
+## List runs
+
+<ParamField method="GET" path="/runs" />
+
+Returns a paginated list of runs, ordered by start time (newest first).
+
+| Query Parameter | Type | Default | Description |
+|----------------|------|---------|-------------|
+| `monitorId` | string | — | Filter by monitor ID |
+| `status` | string | — | Filter by status: `pending`, `running`, `completed`, `failed` |
+| `limit` | number | 50 | Max results per page |
+| `offset` | number | 0 | Pagination offset |
+
+```bash
+curl "https://hub.example.com/runs?monitorId=mon_abc123&limit=10" \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "data": [
+    {
+      "id": "run_xyz789",
+      "monitorId": "mon_abc123",
+      "status": "completed",
+      "triggeredBy": "schedule",
+      "startedAt": "2025-01-15T10:00:00Z",
+      "completedAt": "2025-01-15T10:00:02Z",
+      "duration_ms": 2100,
+      "success": true,
+      "errors": []
+    }
+  ],
+  "total": 100
+}
+```
+
+## Get a run
+
+<ParamField method="GET" path="/runs/:id" />
+
+Returns details for a specific run.
+
+```bash
+curl "https://hub.example.com/runs/run_xyz789" \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+**Response:** `200 OK` with the run object, or `404 Not Found`.
+
+## Trigger a run
+
+<ParamField method="POST" path="/runs/trigger/:monitorId" />
+
+Manually triggers a monitor to execute immediately.
+
+```bash
+curl -X POST "https://hub.example.com/runs/trigger/mon_abc123" \
+  -H "Authorization: Bearer YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "environment": "default" }'
+```
+
+| Body Field | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `environment` | string | Yes | Environment name |
+
+**Response:** `200 OK`
+
+```json
+{
+  "id": "run_new456",
+  "monitorId": "mon_abc123",
+  "status": "pending",
+  "triggeredBy": "manual",
+  "startedAt": "2025-01-15T10:30:00Z"
+}
+```

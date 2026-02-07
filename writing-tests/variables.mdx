@@ -1,0 +1,83 @@
+---
+title: "Variables"
+description: "Configure tests differently per environment"
+---
+
+Variables let you parameterize your tests so the same test file can run against different environments. Unlike secrets, variable values are baked into the monitor definition when you run `griffin apply` — they're not resolved at execution time.
+
+## Using variables
+
+```typescript
+import { variable } from "griffin-ts";
+
+builder.request("check", {
+  method: GET,
+  base: variable("API_HOST"),
+  response_format: Json,
+  path: "/health",
+})
+```
+
+When you run `griffin apply production`, the CLI resolves `variable("API_HOST")` using the value set for the `production` environment.
+
+## Template interpolation
+
+Use a template string to embed a variable within a larger value:
+
+```typescript
+variable("API_VERSION", "/api/${API_VERSION}/health")
+```
+
+The template must contain `${key}` matching the variable key.
+
+## Managing variables with the CLI
+
+```bash
+# Set a variable for an environment
+griffin variables add API_HOST=https://api.staging.example.com --env staging
+griffin variables add API_HOST=https://api.example.com --env production
+
+# List variables
+griffin variables list --env staging
+
+# Remove a variable
+griffin variables remove API_HOST --env staging
+```
+
+## Variables vs secrets
+
+| | Variables | Secrets |
+|---|---|---|
+| **Resolved** | At deploy time (`griffin apply`) | At execution time (by the executor) |
+| **Stored in monitor** | Yes — the resolved value is baked in | No — only a reference is stored |
+| **Visible in hub** | Yes | No — values never leave the secret provider |
+| **Use for** | Base URLs, paths, non-sensitive config | API keys, tokens, passwords |
+
+## Common patterns
+
+### Per-environment base URLs
+
+```typescript
+builder.request("check", {
+  method: GET,
+  base: variable("API_HOST"),
+  response_format: Json,
+  path: "/health",
+})
+```
+
+```bash
+griffin variables add API_HOST=https://api.staging.example.com --env staging
+griffin variables add API_HOST=https://api.example.com --env production
+```
+
+### Versioned API paths
+
+```typescript
+builder.request("check", {
+  method: GET,
+  base: variable("API_HOST"),
+  response_format: Json,
+  path: variable("API_VERSION", "/api/${API_VERSION}/users"),
+})
+```

@@ -14,44 +14,84 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "getting-started/introduction",
+              "getting-started/comparisons",
+              "getting-started/installation",
+              "getting-started/quickstart"
             ]
           },
           {
-            "group": "Core concepts",
+            "group": "Concepts",
             "pages": [
-              "guides/architecture",
-              "guides/test-system",
-              "guides/cli",
-              "guides/executor",
-              "guides/runner",
-              "guides/secret-management"
+              "concepts/cloud-vs-self-host",
+              "concepts/architecture",
+              "concepts/environments",
+              "concepts/execution-model"
+            ]
+          },
+          {
+            "group": "Writing Tests",
+            "pages": [
+              "writing-tests/graph-builder",
+              "writing-tests/sequential-builder",
+              "writing-tests/assertions",
+              "writing-tests/secrets",
+              "writing-tests/variables",
+              "writing-tests/frequencies"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "platform/monitors",
+              "platform/runs",
+              "platform/metrics",
+              "platform/notifications",
+              "platform/integrations"
+            ]
+          },
+          {
+            "group": "Griffin Hub",
+            "pages": [
+              "griffin-hub/overview",
+              "griffin-hub/configuration",
+              "griffin-hub/self-hosting"
+            ]
+          },
+          {
+            "group": "Griffin Cloud",
+            "pages": [
+              "griffin-cloud/overview",
+              "griffin-cloud/organizations",
+              "griffin-cloud/members-roles",
+              "griffin-cloud/billing"
+            ]
+          },
+          {
+            "group": "Command Line",
+            "pages": [
+              "cli/core-commands",
+              "cli/authentication",
+              "cli/environments",
+              "cli/plan-apply",
+              "cli/runs-metrics"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "Runner API",
+            "group": "API Reference",
             "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoints",
-            "pages": [
-              "api-reference/endpoint/deploy",
-              "api-reference/endpoint/list",
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/execute",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/logs"
+              "api-reference/overview",
+              "api-reference/authentication",
+              "api-reference/monitors",
+              "api-reference/runs",
+              "api-reference/environments"
             ]
           }
         ]

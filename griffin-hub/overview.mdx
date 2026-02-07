@@ -1,0 +1,70 @@
+---
+title: "Griffin Hub Overview"
+description: "The control plane for Griffin's API monitoring"
+---
+
+Griffin Hub is the backend service that stores monitors, schedules runs, processes results, and serves the API. It's what the CLI communicates with when you run `griffin apply`, `griffin runs`, or `griffin metrics`.
+
+## What the hub does
+
+- **Stores monitors** — Receives and persists test definitions from the CLI
+- **Schedules execution** — Triggers monitors based on their configured frequency
+- **Processes results** — Stores run outcomes and aggregates metrics
+- **Manages secrets** — Resolves secret references at execution time
+- **Sends notifications** — Evaluates notification rules and dispatches alerts
+- **Serves the API** — Provides REST endpoints for the CLI and integrations
+
+## Deployment modes
+
+### Standalone
+
+The hub runs with a built-in executor in a single process. This is the simplest setup:
+
+```bash
+cd griffin-hub
+npm run start:standalone
+```
+
+One process handles everything: API, scheduling, and test execution.
+
+### Distributed
+
+The hub runs as a control plane only, with separate executor agents:
+
+```bash
+# Start the hub (control plane only)
+cd griffin-hub
+npm start
+
+# Start agents separately (can be on different machines)
+# Agents register with the hub and pull jobs from the queue
+```
+
+This mode supports multiple executors in different locations for geographic distribution and horizontal scaling.
+
+## Requirements
+
+- **Node.js** 18+
+- **PostgreSQL** 14+ (for storage and job queue)
+- Appropriate environment variables (see [Configuration](/griffin-hub/configuration))
+
+## Quick start
+
+```bash
+# Set up the database
+export DATABASE_URL="postgresql://user:pass@localhost:5432/griffin"
+cd griffin-hub
+npm run db:push
+
+# Start in standalone mode
+npm run start:standalone
+```
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/griffin-hub/configuration">
+    All environment variables and options.
+  </Card>
+  <Card title="Self-Hosting Guide" icon="server" href="/griffin-hub/self-hosting">
+    Step-by-step deployment instructions.
+  </Card>
+</CardGroup>

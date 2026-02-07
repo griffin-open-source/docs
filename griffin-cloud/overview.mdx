@@ -1,0 +1,56 @@
+---
+title: "Griffin Cloud Overview"
+description: "Managed API monitoring platform"
+---
+
+Griffin Cloud is the managed version of Griffin. It runs the hub, database, executors, and web dashboard so you can focus on writing tests.
+
+## Getting started
+
+```bash
+# Install the CLI
+npm install -g griffin-cli
+
+# Authenticate with Griffin Cloud
+griffin auth login
+
+# Initialize your project
+griffin init
+
+# Deploy monitors
+griffin apply
+```
+
+The `griffin auth login` command opens a browser-based authentication flow. Once authenticated, the CLI stores your credentials locally and all subsequent commands communicate with Griffin Cloud.
+
+## What's included
+
+- **Hosted hub** — Monitors, scheduling, and results storage are fully managed
+- **Multi-region executors** — Run tests from multiple global locations
+- **Web dashboard** — View monitors, runs, metrics, and alerts in a browser
+- **Organizations** — Collaborate with your team (see [Organizations](/griffin-cloud/organizations))
+- **Built-in integrations** — Slack, email, and webhook notifications
+- **Automatic updates** — New features ship without any action on your part
+
+## CLI workflow
+
+The CLI workflow is identical to self-hosted. The only difference is how you authenticate:
+
+```bash
+# Griffin Cloud
+griffin auth login
+
+# Self-hosted
+griffin auth connect --url https://hub.example.com --token YOUR_KEY
+```
+
+All other commands (`plan`, `apply`, `runs`, `metrics`, etc.) work the same way.
+
+<CardGroup cols={2}>
+  <Card title="Organizations" icon="users" href="/griffin-cloud/organizations">
+    Manage teams and projects.
+  </Card>
+  <Card title="Members & Roles" icon="user-shield" href="/griffin-cloud/members-roles">
+    Control access with role-based permissions.
+  </Card>
+</CardGroup>
