@@ -1,0 +1,94 @@
+---
+title: "Quickstart"
+description: "Write and run your first API test in minutes"
+---
+
+## 1. Install and initialize
+
+```bash
+npm install -g griffin-cli
+griffin init
+```
+
+## 2. Create a test file
+
+Create a `__griffin__/` directory and add a test file:
+
+```bash
+mkdir -p __griffin__
+```
+
+Create `__griffin__/health-check.ts`:
+
+```typescript
+import { createTestBuilder, GET, Json, Assert, Frequency } from "griffin-ts";
+
+const monitor = createTestBuilder({
+  name: "health-check",
+  frequency: Frequency.every(1).minute(),
+})
+  .request("check", {
+    method: GET,
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/health",
+  })
+  .assert((state) => [
+    Assert(state["check"].status).equals(200),
+  ])
+  .build();
+
+export default monitor;
+```
+
+Replace `https://api.example.com` with your API's URL.
+
+## 3. Run locally
+
+```bash
+griffin test
+```
+
+Griffin discovers all test files in `__griffin__/` directories and executes them. You'll see the results for each monitor — which requests were made, whether assertions passed, and timing information.
+
+## 4. Deploy to the hub
+
+Once your tests are working locally, deploy them for continuous monitoring:
+
+```bash
+# Authenticate (Cloud)
+griffin auth login
+
+# Or connect to a self-hosted hub
+griffin auth connect --url https://your-hub.example.com --token YOUR_TOKEN
+
+# Preview what will change
+griffin plan
+
+# Deploy
+griffin apply
+```
+
+Your tests are now running on a schedule. View results with:
+
+```bash
+griffin runs
+griffin metrics
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Sequential Builder" icon="arrow-right" href="/writing-tests/sequential-builder">
+    Learn the simpler builder for linear test flows.
+  </Card>
+  <Card title="Graph Builder" icon="diagram-project" href="/writing-tests/graph-builder">
+    Build complex tests with branching and parallel steps.
+  </Card>
+  <Card title="Assertions" icon="check" href="/writing-tests/assertions">
+    Validate status codes, response bodies, headers, and latency.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/cli/core-commands">
+    See all available commands.
+  </Card>
+</CardGroup>

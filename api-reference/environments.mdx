@@ -1,0 +1,109 @@
+---
+title: "Environments API"
+description: "Environment-scoped API operations"
+---
+
+Environments are used as a filter across most Griffin Hub API endpoints. There is no dedicated environments CRUD API — environments are implicitly created when you deploy monitors to them.
+
+## Using environments in API calls
+
+Most endpoints accept an `environment` query parameter or body field to scope operations:
+
+### Monitors
+
+```bash
+# List monitors for a specific environment
+curl "https://hub.example.com/monitor?projectId=my-project&environment=production" \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+### Metrics
+
+```bash
+# Get metrics for a specific environment
+curl "https://hub.example.com/metrics/summary?environment=production&period=day" \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "period": "day",
+  "periodStart": "2025-01-14T10:00:00Z",
+  "periodEnd": "2025-01-15T10:00:00Z",
+  "monitors": {
+    "total": 5,
+    "passing": 4,
+    "failing": 1,
+    "noRecentRuns": 0
+  },
+  "runs": {
+    "total": 1200,
+    "successful": 1180,
+    "failed": 20,
+    "successRate": 98.3
+  },
+  "latency": {
+    "p50": 120,
+    "p95": 450,
+    "p99": 1200
+  },
+  "uptimePercent": 98.3,
+  "failingMonitors": [
+    {
+      "monitorId": "mon_abc123",
+      "name": "payment-flow",
+      "lastFailure": "2025-01-15T09:45:00Z"
+    }
+  ]
+}
+```
+
+### Secrets
+
+```bash
+# List secrets for an environment
+curl "https://hub.example.com/secrets?environment=production" \
+  -H "Authorization: Bearer YOUR_KEY"
+
+# Set a secret in an environment
+curl -X PUT "https://hub.example.com/secrets/API_KEY" \
+  -H "Authorization: Bearer YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "value": "sk-1234...", "environment": "production" }'
+```
+
+### Integrations
+
+```bash
+# List integrations for an environment
+curl "https://hub.example.com/integrations?environment=production" \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+## Locations
+
+Get available executor locations:
+
+```bash
+curl "https://hub.example.com/locations" \
+  -H "Authorization: Bearer YOUR_KEY"
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": "us-east-1",
+    "queueName": "us-east",
+    "displayName": "US East (N. Virginia)"
+  },
+  {
+    "id": "eu-west-1",
+    "queueName": "eu-west",
+    "displayName": "EU West (Ireland)"
+  }
+]
+```

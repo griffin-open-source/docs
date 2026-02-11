@@ -1,0 +1,52 @@
+---
+title: "Introduction"
+description: "Griffin is an open-source API testing platform for production monitoring"
+---
+
+Griffin is an open-source platform for writing API tests in TypeScript and running them continuously against your production APIs. Think of it as **tests that never stop running** — catching issues before your users do.
+
+## What Griffin does
+
+- **Write tests in TypeScript** — Use a type-safe DSL to define API checks with full IDE support
+- **Run continuously** — Schedule tests to run every minute, hour, or day
+- **Monitor from multiple locations** — Execute tests from different regions to catch geographic issues
+- **Get notified** — Receive alerts via Slack, email, or webhooks when tests fail
+- **Track metrics** — View success rates, latency percentiles, and uptime over time
+
+## How it works
+
+```mermaid
+flowchart LR
+    A["__griffin__/\ntest files"] --> B["Griffin CLI"]
+    B -->|plan & apply| C["Griffin Hub"]
+    C -->|scheduled\nexecution| D["Results, metrics,\nand notifications"]
+```
+
+1. **Write tests** in `__griffin__/` directories using the `griffin-ts` TypeScript DSL
+2. **Run locally** with `griffin test` to validate during development
+3. **Deploy to the hub** with `griffin apply` to start continuous monitoring
+4. **View results** through the platform — runs, metrics, and alerts
+
+## Deployment options
+
+Griffin offers two ways to run:
+
+<CardGroup cols={2}>
+  <Card title="Griffin Cloud" icon="cloud" href="/griffin-cloud/overview">
+    Managed platform — sign up, connect, and start monitoring. No infrastructure to manage.
+  </Card>
+  <Card title="Self-hosted" icon="server" href="/griffin-hub/self-hosting">
+    Run Griffin Hub on your own infrastructure. Full control over data and execution.
+  </Card>
+</CardGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/getting-started/installation">
+    Install the Griffin CLI.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/getting-started/quickstart">
+    Write and run your first test in minutes.
+  </Card>
+</CardGroup>

@@ -1,125 +1,88 @@
 ---
 title: "Introduction"
-description: "API testing framework that lives in your codebase"
+description: "Open-source API testing platform for production monitoring"
 ---
 
 ## What is Griffin?
 
-Griffin is an open-source project that allows developers to create API tests with code and run those tests against their production APIs. It's like Datadog Synthetics, but it lives in your codebase.
+Griffin is an open-source platform for writing API tests in TypeScript and running them continuously against your production APIs. Write tests as code, deploy them to a hub, and get notified when things break.
 
 <Card
   title="Get started"
   icon="rocket"
-  href="/quickstart"
+  href="/getting-started/quickstart"
   horizontal
 >
-  Follow our quickstart guide to create your first API test.
+  Write and run your first API test in minutes.
 </Card>
 
 ## Key Features
 
-Griffin provides everything you need to build comprehensive API test suites.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
     title="TypeScript DSL"
     icon="code"
-    href="/guides/test-system"
+    href="/writing-tests/sequential-builder"
   >
-    Write tests using sequential or graph-based builders with full TypeScript support.
+    Write tests using sequential or graph-based builders with full type safety and IDE autocomplete.
   </Card>
   <Card
-    title="Hub-Agent Architecture"
-    icon="network-wired"
-    href="/guides/architecture"
-  >
-    Distributed test execution across multiple geographic locations with health monitoring.
-  </Card>
-  <Card
-    title="Event-Driven Analytics"
+    title="Continuous Monitoring"
     icon="chart-line"
-    href="/guides/runner"
+    href="/platform/metrics"
   >
-    Full observability with event streaming to Kinesis, S3 data lakes, and real-time alerting.
+    Schedule tests to run every minute, hour, or day. Track success rates, latency, and uptime.
   </Card>
   <Card
     title="Multi-Location Execution"
     icon="globe"
-    href="/guides/architecture"
+    href="/concepts/architecture"
   >
-    Deploy agents in multiple regions to test from different geographic locations.
+    Run tests from multiple regions to catch geographic issues.
+  </Card>
+  <Card
+    title="Notifications"
+    icon="bell"
+    href="/platform/notifications"
+  >
+    Get alerted via Slack, email, or webhooks when monitors fail or degrade.
   </Card>
   <Card
     title="Secret Management"
     icon="shield-keyhole"
-    href="/guides/secret-management"
+    href="/writing-tests/secrets"
   >
-    Support for env vars, AWS Secrets Manager, and HashiCorp Vault with field extraction.
+    Built-in support for env vars, AWS Secrets Manager, and HashiCorp Vault.
   </Card>
   <Card
-    title="OIDC Authentication"
-    icon="lock"
-    href="/guides/cli"
-  >
-    Secure CLI authentication with device authorization flow or API keys.
-  </Card>
-</Columns>
-
-## Architecture
-
-Griffin uses a hub-and-agent architecture for distributed test execution:
-
-<Columns cols={2}>
-  <Card
-    title="griffin-cli"
-    icon="terminal"
-    href="/guides/cli"
-  >
-    Command-line tool for local test execution and hub management with OIDC auth.
-  </Card>
-  <Card
-    title="griffin-ts"
-    icon="file-code"
-    href="/guides/test-system"
-  >
-    TypeScript DSL with sequential and graph-based builders for defining monitors.
-  </Card>
-  <Card
-    title="griffin-executor"
-    icon="play"
-    href="/guides/executor"
-  >
-    Core execution engine with graph-based flow control and event emission.
-  </Card>
-  <Card
-    title="griffin-hub"
+    title="Cloud or Self-Hosted"
     icon="server"
-    href="/guides/runner"
+    href="/concepts/cloud-vs-self-host"
   >
-    Control plane that manages monitors, schedules jobs, and tracks agents.
+    Use Griffin Cloud for a managed experience, or self-host for full control.
   </Card>
-</Columns>
+</CardGroup>
 
 ## Quick Example
 
-Here's a simple API test written with Griffin:
-
 ```typescript
-import { createTestBuilder, GET, JSON, Assert, Frequency } from "griffin-ts";
+import { createTestBuilder, GET, Json, Assert, Frequency } from "griffin-ts";
 
 const monitor = createTestBuilder({
   name: "health-check",
-  endpoint_host: "http://localhost:3000"
+  frequency: Frequency.every(1).minute(),
 })
-  .endpoint("health", {
+  .request("check", {
     method: GET,
-    response_format: JSON,
-    path: "/health"
+    base: "https://api.example.com",
+    response_format: Json,
+    path: "/health",
   })
   .assert((state) => [
-    Assert(state["health"].status).equals(200)
+    Assert(state["check"].status).equals(200),
+    Assert(state["check"].latency).lessThan(2000),
   ])
-  .build({ frequency: Frequency.every(1).minute() });
+  .build();
 
 export default monitor;
 ```
@@ -127,16 +90,16 @@ export default monitor;
 ## Learn More
 
 <CardGroup cols={2}>
-  <Card title="Quickstart" icon="rocket" href="/quickstart">
-    Get up and running in minutes.
+  <Card title="Installation" icon="download" href="/getting-started/installation">
+    Install the Griffin CLI.
   </Card>
-  <Card title="Architecture" icon="sitemap" href="/guides/architecture">
+  <Card title="Architecture" icon="sitemap" href="/concepts/architecture">
     Understand how Griffin works.
   </Card>
-  <Card title="CLI Reference" icon="terminal" href="/guides/cli">
-    Learn all CLI commands.
+  <Card title="CLI Reference" icon="terminal" href="/cli/core-commands">
+    See all CLI commands.
   </Card>
-  <Card title="API Reference" icon="code" href="/api-reference/introduction">
-    Explore the Runner API.
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore the Hub REST API.
   </Card>
 </CardGroup>

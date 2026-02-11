@@ -1,0 +1,75 @@
+---
+title: "Cloud vs Self-Host"
+description: "Choose between Griffin Cloud and self-hosting Griffin Hub"
+---
+
+Griffin supports two deployment models. Your tests and CLI workflow are identical in both — the difference is where the hub runs.
+
+## Griffin Cloud
+
+Griffin Cloud is the managed platform. Sign up, authenticate with the CLI, and start deploying monitors immediately.
+
+- **No infrastructure to manage** — we run the hub, database, and executors
+- **Multi-region execution** — run tests from multiple global locations
+- **Built-in integrations** — Slack, email, and webhook notifications pre-configured
+- **Organizations and teams** — invite members, assign roles, manage billing
+- **Always up to date** — new features and improvements ship automatically
+
+```bash
+# Authenticate with Griffin Cloud
+griffin auth login
+
+# Deploy monitors
+griffin apply
+```
+
+<Card title="Griffin Cloud" icon="cloud" href="/griffin-cloud/overview">
+  Learn more about Griffin Cloud features.
+</Card>
+
+## Self-hosted
+
+Run Griffin Hub on your own infrastructure for full control over data, networking, and execution.
+
+- **Data stays with you** — monitors, results, and secrets never leave your network
+- **Custom locations** — run executors anywhere (your data centers, cloud regions, edge nodes)
+- **Network access** — test internal APIs not exposed to the internet
+- **No usage limits** — run as many monitors as your infrastructure supports
+
+```bash
+# Connect to your self-hosted hub
+griffin auth connect --url https://hub.internal.example.com --token YOUR_API_KEY
+
+# Same workflow
+griffin apply
+```
+
+<Card title="Self-Hosting Guide" icon="server" href="/griffin-hub/self-hosting">
+  Set up Griffin Hub on your own infrastructure.
+</Card>
+
+## Comparison
+
+| | Griffin Cloud | Self-hosted |
+|---|---|---|
+| **Setup** | Sign up and authenticate | Deploy Hub + PostgreSQL |
+| **Infrastructure** | Managed | You manage |
+| **Internal APIs** | Requires public endpoints | Full network access |
+| **Data residency** | Griffin-managed | Your infrastructure |
+| **Scaling** | Automatic | Manual (horizontal scaling supported) |
+| **Authentication** | OIDC (built-in) | API keys or OIDC |
+| **Cost** | Usage-based subscription | Infrastructure costs only |
+
+## Switching between models
+
+Since the CLI workflow is the same for both, you can switch between Cloud and self-hosted by changing your authentication:
+
+```bash
+# Switch to self-hosted
+griffin auth connect --url https://your-hub.example.com --token YOUR_KEY
+
+# Switch back to Cloud
+griffin auth login
+```
+
+Your test files don't need to change. Only the hub connection changes.

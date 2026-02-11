@@ -1,0 +1,62 @@
+---
+title: "Metrics"
+description: "Track success rates, latency, and uptime"
+---
+
+Griffin aggregates run results into metrics so you can track the health of your APIs over time.
+
+## Viewing metrics
+
+```bash
+# Summary across all monitors (last 24 hours)
+griffin metrics
+
+# Metrics for a specific environment
+griffin metrics production
+
+# Different time windows
+griffin metrics --period 1h    # Last hour
+griffin metrics --period 6h    # Last 6 hours
+griffin metrics --period 24h   # Last 24 hours (default)
+griffin metrics --period 7d    # Last 7 days
+griffin metrics --period 30d   # Last 30 days
+
+# JSON output for scripting
+griffin metrics --json
+```
+
+## Available metrics
+
+### Summary metrics
+
+| Metric | Description |
+|--------|-------------|
+| **Total monitors** | Number of deployed monitors |
+| **Passing** | Monitors with recent successful runs |
+| **Failing** | Monitors with recent failures |
+| **Total runs** | Number of runs in the time period |
+| **Success rate** | Percentage of successful runs |
+| **Uptime** | Overall availability percentage |
+
+### Latency metrics
+
+| Metric | Description |
+|--------|-------------|
+| **p50** | Median response time |
+| **p95** | 95th percentile response time |
+| **p99** | 99th percentile response time |
+
+### Per-monitor metrics
+
+The hub also tracks detailed metrics per monitor:
+- Run count, success count, failure count
+- Min, avg, and percentile latencies
+- Last run time and status
+- Recent failure details
+- Error distribution
+
+## How metrics are calculated
+
+The hub aggregates run results into hourly and daily buckets. When you query metrics, the API rolls up the relevant buckets for your time period.
+
+This means metrics are always based on actual run data — there's no sampling or estimation.

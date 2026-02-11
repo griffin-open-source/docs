@@ -1,0 +1,38 @@
+---
+title: "Members & Roles"
+description: "Manage team access with role-based permissions"
+---
+
+Organizations in Griffin Cloud support role-based access control. Each member is assigned a role that determines what they can do.
+
+## Roles
+
+| Role | Description |
+|------|-------------|
+| **Admin** | Full access — manage members, billing, integrations, and all monitors |
+| **Member** | Can deploy monitors, view runs and metrics, manage secrets and variables |
+
+## Inviting members
+
+Admins can invite new members from the web dashboard:
+
+1. Navigate to your organization settings
+2. Click **Invite member**
+3. Enter their email address and select a role
+4. They'll receive an invitation email with a link to join
+
+## Managing members
+
+Admins can:
+- View all organization members
+- Change a member's role
+- Remove members from the organization
+
+## Authentication
+
+Griffin Cloud supports multiple authentication methods:
+- **Email and password**
+- **OAuth providers** (Google, GitHub, etc.)
+- **Magic link** (passwordless email login)
+
+For CLI authentication, use `griffin auth login` which starts a device authorization flow in your browser.

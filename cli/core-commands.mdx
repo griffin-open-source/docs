@@ -1,0 +1,124 @@
+---
+title: "Core Commands"
+description: "Griffin CLI command reference"
+---
+
+## griffin init
+
+Initialize Griffin in the current directory. Creates a `griffin.json` config file.
+
+```bash
+griffin init
+griffin init --project my-api
+```
+
+| Option | Description |
+|--------|-------------|
+| `--project <name>` | Project ID (defaults to package.json name or directory name) |
+
+## griffin validate
+
+Check monitor files for errors without running them.
+
+```bash
+griffin validate
+```
+
+## griffin status
+
+Show the current project, hub connection, and environment configuration.
+
+```bash
+griffin status
+```
+
+## griffin test
+
+Run monitors locally against their configured endpoints. Useful for validating tests during development.
+
+```bash
+griffin test              # Default environment
+griffin test production   # Specific environment
+```
+
+| Argument | Description |
+|----------|-------------|
+| `[env]` | Environment name (optional, defaults to `default`) |
+
+## griffin plan
+
+Preview what changes would be applied to the hub. Shows which monitors will be created, updated, or remain unchanged.
+
+```bash
+griffin plan              # Default environment
+griffin plan production   # Specific environment
+griffin plan --json       # JSON output
+```
+
+| Option | Description |
+|--------|-------------|
+| `--json` | Output in JSON format |
+
+Exits with code 2 if there are pending changes (useful for CI/CD).
+
+## griffin apply
+
+Push monitor changes to the hub.
+
+```bash
+griffin apply
+griffin apply production
+griffin apply --auto-approve
+griffin apply production --prune
+```
+
+| Option | Description |
+|--------|-------------|
+| `--auto-approve` | Skip the confirmation prompt |
+| `--dry-run` | Show what would be done without making changes |
+| `--prune` | Delete monitors on the hub that don't exist locally |
+
+## griffin run
+
+Trigger a specific monitor to run immediately.
+
+```bash
+griffin run --monitor health-check
+griffin run production --monitor health-check --wait
+```
+
+| Option | Description |
+|--------|-------------|
+| `--monitor <name>` | Monitor name to run (required) |
+| `--wait` | Wait for the run to complete and show results |
+| `--force` | Run even if the local monitor differs from the hub |
+
+## griffin runs
+
+List recent monitor runs.
+
+```bash
+griffin runs
+griffin runs production
+griffin runs --monitor health-check --limit 20
+```
+
+| Option | Description |
+|--------|-------------|
+| `--monitor <name>` | Filter by monitor name |
+| `--limit <n>` | Number of runs to show (default: 10) |
+
+## griffin metrics
+
+Show monitor metrics summary.
+
+```bash
+griffin metrics
+griffin metrics production
+griffin metrics --period 7d --json
+```
+
+| Option | Description |
+|--------|-------------|
+| `--period <period>` | Time window: `1h`, `6h`, `24h`, `7d`, `30d` (default: `24h`) |
+| `--json` | Output as JSON |
