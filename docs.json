@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Griffin",
   "colors": {
-    "primary": "#16A34A",
+    "primary": "#EC407A",
     "light": "#07C983",
-    "dark": "#15803D"
+    "dark": "#EC407A"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -136,5 +136,9 @@
     "socials": {
       "github": "https://github.com/griffin-open-source/griffin"
     }
+  },
+  "appearance": {
+    "strict": true,
+    "default": "dark"
   }
 }
