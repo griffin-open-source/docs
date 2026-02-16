@@ -1,18 +1,18 @@
 ---
 title: "Monitors"
-description: "Managing your deployed API tests"
+description: "Managing your deployed API monitors"
 ---
 
-A monitor is a deployed test that runs on a schedule. When you run `griffin apply`, your local test files are pushed to the hub as monitors.
+A monitor is a deployed definition that runs on a schedule. When you run `griffin apply`, your local monitor files are pushed to the hub as monitors.
 
 ## Monitor lifecycle
 
 ```mermaid
 flowchart LR
-    A["Write test"] --> B["griffin plan"] --> C["griffin apply"] --> D["Scheduled execution"] --> E["Results"]
+    A["Write monitor"] --> B["griffin plan"] --> C["griffin apply"] --> D["Scheduled execution"] --> E["Results"]
 ```
 
-1. **Write** test files in `__griffin__/` directories
+1. **Write** monitor files in `__griffin__/` directories
 2. **Plan** to preview what will change on the hub
 3. **Apply** to create, update, or delete monitors
 4. The hub **schedules** execution based on each monitor's frequency
@@ -34,10 +34,10 @@ The plan output shows which monitors will be created, updated, or left unchanged
 
 ## Updating monitors
 
-Edit your test files and re-deploy:
+Edit your monitor files and re-deploy:
 
 ```bash
-# Make changes to your test files, then:
+# Make changes to your monitor files, then:
 griffin plan          # Preview the diff
 griffin apply         # Push changes
 ```
@@ -54,7 +54,7 @@ griffin apply production --prune
 ```
 
 <Warning>
-`--prune` deletes any monitors on the hub that don't have a corresponding local test file. Make sure your local test files are complete before using this flag.
+`--prune` deletes any monitors on the hub that don't have a corresponding local monitor file. Make sure your local monitor files are complete before using this flag.
 </Warning>
 
 ## Monitor identity
@@ -62,9 +62,9 @@ griffin apply production --prune
 A monitor is uniquely identified by the combination of:
 - **Project** — set during `griffin init`
 - **Environment** — the target environment (e.g., `default`, `production`)
-- **Name** — the `name` field in your test builder
+- **Name** — the `name` field in your monitor builder
 
-This means the same test file can be deployed to multiple environments independently.
+This means the same monitor file can be deployed to multiple environments independently.
 
 ## Triggering a manual run
 

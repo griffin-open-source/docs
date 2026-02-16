@@ -3,16 +3,16 @@ title: "Notifications"
 description: "Get alerted when monitors fail"
 ---
 
-Notifications let you receive alerts when your monitors fail, recover, or meet specific conditions. Configure them directly in your test files using the `notify` DSL.
+Notifications let you receive alerts when your monitors fail, recover, or meet specific conditions. Configure them directly in your monitor files using the `notify` DSL.
 
 ## Defining notifications
 
 Add notifications when creating your monitor:
 
 ```typescript
-import { createTestBuilder, notify, Frequency, GET, Json } from "griffin-ts";
+import { createMonitorBuilder, notify, Frequency, GET, Json } from "@griffin-app/griffin";
 
-const monitor = createTestBuilder({
+const monitor = createMonitorBuilder({
   name: "health-check",
   frequency: Frequency.every(1).minute(),
   notifications: [

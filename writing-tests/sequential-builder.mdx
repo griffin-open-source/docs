@@ -1,18 +1,18 @@
 ---
 title: "Sequential Builder"
-description: "The simplest way to write linear API test flows"
+description: "The simplest way to write linear API monitor flows"
 ---
 
-The sequential builder is the easiest way to write Griffin tests. You add steps in order and edges are created automatically: `START → step 1 → step 2 → ... → END`.
+The sequential builder is the easiest way to write Griffin monitors. You add steps in order and edges are created automatically: `START → step 1 → step 2 → ... → END`.
 
-For tests that need branching or parallel paths, see the [Graph Builder](/writing-tests/graph-builder).
+For monitors that need branching or parallel paths, see the [Graph Builder](/writing-tests/graph-builder).
 
 ## Basic example
 
 ```typescript
-import { createTestBuilder, GET, Json, Assert, Frequency } from "griffin-ts";
+import { createMonitorBuilder, GET, Json, Assert, Frequency } from "@griffin-app/griffin";
 
-const monitor = createTestBuilder({
+const monitor = createMonitorBuilder({
   name: "health-check",
   frequency: Frequency.every(1).minute(),
 })
@@ -33,7 +33,7 @@ export default monitor;
 ## Configuration
 
 ```typescript
-createTestBuilder({
+createMonitorBuilder({
   name: "my-test",                          // Required: unique monitor name
   frequency: Frequency.every(5).minutes(),  // Required: how often to run
   locations: ["us-east-1"],                 // Optional: where to execute
@@ -115,15 +115,15 @@ See [Assertions](/writing-tests/assertions) for the full assertion API.
 
 ## Complete example
 
-A multi-step API test that creates a resource, verifies it, and cleans up:
+A multi-step API monitor that creates a resource, verifies it, and cleans up:
 
 ```typescript
 import {
-  createTestBuilder, GET, POST, DELETE, Json,
+  createMonitorBuilder, GET, POST, DELETE, Json,
   Assert, Frequency, secret
-} from "griffin-ts";
+} from "@griffin-app/griffin";
 
-const monitor = createTestBuilder({
+const monitor = createMonitorBuilder({
   name: "user-lifecycle",
   frequency: Frequency.every(15).minutes(),
 })

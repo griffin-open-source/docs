@@ -6,13 +6,13 @@ description: "Write and run your first API test in minutes"
 ## 1. Install and initialize
 
 ```bash
-npm install -g griffin-cli
+npm install -g @griffin-app/griffin
 griffin init
 ```
 
-## 2. Create a test file
+## 2. Create a monitor file
 
-Create a `__griffin__/` directory and add a test file:
+Create a `__griffin__/` directory and add a monitor file:
 
 ```bash
 mkdir -p __griffin__
@@ -21,9 +21,9 @@ mkdir -p __griffin__
 Create `__griffin__/health-check.ts`:
 
 ```typescript
-import { createTestBuilder, GET, Json, Assert, Frequency } from "griffin-ts";
+import { createMonitorBuilder, GET, Json, Assert, Frequency } from "@griffin-app/griffin";
 
-const monitor = createTestBuilder({
+const monitor = createMonitorBuilder({
   name: "health-check",
   frequency: Frequency.every(1).minute(),
 })
@@ -49,11 +49,11 @@ Replace `https://api.example.com` with your API's URL.
 griffin test
 ```
 
-Griffin discovers all test files in `__griffin__/` directories and executes them. You'll see the results for each monitor — which requests were made, whether assertions passed, and timing information.
+Griffin discovers all monitor files in `__griffin__/` directories and executes them. You'll see the results for each monitor — which requests were made, whether assertions passed, and timing information.
 
 ## 4. Deploy to the hub
 
-Once your tests are working locally, deploy them for continuous monitoring:
+Once your monitors are working locally, deploy them for continuous monitoring:
 
 ```bash
 # Authenticate (Cloud)
@@ -69,7 +69,7 @@ griffin plan
 griffin apply
 ```
 
-Your tests are now running on a schedule. View results with:
+Your monitors are now running on a schedule. View results with:
 
 ```bash
 griffin runs

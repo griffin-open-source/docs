@@ -1,29 +1,29 @@
 ---
 title: "Introduction"
-description: "Griffin is an open-source API testing platform for production monitoring"
+description: "Griffin is an open-source API monitoring platform for production"
 ---
 
-Griffin is an open-source platform for writing API tests in TypeScript and running them continuously against your production APIs. Think of it as **tests that never stop running** — catching issues before your users do.
+Griffin is an open-source platform for writing API monitors in TypeScript and running them continuously against your production APIs. Think of it as **monitors that never stop running** — catching issues before your users do.
 
 ## What Griffin does
 
-- **Write tests in TypeScript** — Use a type-safe DSL to define API checks with full IDE support
-- **Run continuously** — Schedule tests to run every minute, hour, or day
-- **Monitor from multiple locations** — Execute tests from different regions to catch geographic issues
-- **Get notified** — Receive alerts via Slack, email, or webhooks when tests fail
+- **Write monitors in TypeScript** — Use a type-safe DSL to define API checks with full IDE support
+- **Run continuously** — Schedule monitors to run every minute, hour, or day
+- **Monitor from multiple locations** — Execute monitors from different regions to catch geographic issues
+- **Get notified** — Receive alerts via Slack, email, or webhooks when monitors fail
 - **Track metrics** — View success rates, latency percentiles, and uptime over time
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    A["__griffin__/\ntest files"] --> B["Griffin CLI"]
+    A["__griffin__/\nmonitor files"] --> B["Griffin CLI"]
     B -->|plan & apply| C["Griffin Hub"]
     C -->|scheduled\nexecution| D["Results, metrics,\nand notifications"]
 ```
 
-1. **Write tests** in `__griffin__/` directories using the `griffin-ts` TypeScript DSL
-2. **Run locally** with `griffin test` to validate during development
+1. **Write monitors** in `__griffin__/` directories using the `@griffin-app/griffin` TypeScript DSL
+2. **Run locally** with `griffin test` to validate monitors during development
 3. **Deploy to the hub** with `griffin apply` to start continuous monitoring
 4. **View results** through the platform — runs, metrics, and alerts
 

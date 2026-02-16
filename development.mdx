@@ -37,7 +37,7 @@ npm install
 npm run build
 
 # Build the CLI
-cd ../griffin-cli
+cd ../@griffin-app/griffin
 npm install
 npm run build
 ```
@@ -58,9 +58,9 @@ This starts a simple JSON API server on `http://localhost:3000` with basic CRUD 
 
 </Step>
 
-<Step title="Create and run a test">
+<Step title="Create and run a monitor">
 
-Create a test file in a `__griffin__` directory:
+Create a monitor file in a `__griffin__` directory:
 
 ```typescript
 // __griffin__/dev-test.ts
@@ -86,7 +86,7 @@ plan.create({ frequency: Frequency.every(1).minute() });
 Run the test using the built CLI:
 
 ```bash
-node griffin-cli/dist/cli.js run-local
+node @griffin-app/griffin/dist/cli.js run-local
 ```
 
 </Step>
@@ -98,17 +98,17 @@ Griffin is organized into separate packages:
 
 <AccordionGroup>
   <Accordion title="griffin-test-system">
-    The TypeScript DSL library for defining API tests. Tests are written in TypeScript and output JSON test plans.
+    The TypeScript DSL library for defining API monitors. Monitors are written in TypeScript and output JSON monitor definitions.
     
     **Location**: `griffin-test-system/`
     
     **Key files**:
     - `src/index.ts` - Main exports
-    - `src/ApiCheckBuilder.ts` - Builder class for test plans
+    - `src/ApiCheckBuilder.ts` - Builder class for monitors
   </Accordion>
 
   <Accordion title="griffin-plan-executor">
-    Executes JSON test plans. Can run tests locally or remotely (e.g., in a Lambda function).
+    Executes JSON monitor definitions. Can run monitors locally or remotely (e.g., in a Lambda function).
     
     **Location**: `griffin-plan-executor/`
     
@@ -117,18 +117,18 @@ Griffin is organized into separate packages:
     - `src/graph.ts` - Graph-based execution following edges
   </Accordion>
 
-  <Accordion title="griffin-cli">
-    CLI tool for discovering tests, running them locally, and managing remote execution.
+  <Accordion title="@griffin-app/griffin">
+    CLI tool for discovering monitors, running them locally, and managing remote execution.
     
-    **Location**: `griffin-cli/`
+    **Location**: `@griffin-app/griffin/`
     
     **Key files**:
     - `src/cli.ts` - CLI entry point
-    - `src/discovery.ts` - Test file discovery
+    - `src/discovery.ts` - Monitor file discovery
   </Accordion>
 
   <Accordion title="griffin-runner">
-    Orchestration service for scheduling and executing tests. Stores results in PostgreSQL.
+    Orchestration service for scheduling and executing monitors. Stores results in PostgreSQL.
     
     **Location**: `griffin-runner/`
     
@@ -140,11 +140,11 @@ Griffin is organized into separate packages:
 
 ## Development Workflow
 
-### Running Tests Locally
+### Running Monitors Locally
 
 1. Start your API server (or use the sample API)
-2. Create test files in `__griffin__` directories
-3. Run `node griffin-cli/dist/cli.js run-local` to execute all discovered tests
+2. Create monitor files in `__griffin__` directories
+3. Run `node @griffin-app/griffin/dist/cli.js run-local` to execute all discovered monitors
 
 ### Making Changes
 
@@ -155,12 +155,12 @@ When making changes to the codebase:
 3. If you changed `griffin-test-system`, rebuild it first as other packages depend on it
 4. Test your changes by running the CLI
 
-### Test File Discovery
+### Monitor File Discovery
 
-Griffin discovers test files by:
+Griffin discovers monitor files by:
 - Looking for `__griffin__` subdirectories
 - Finding all `.ts` files within those directories
-- Each test file should export a test plan created with `ApiCheckBuilder`
+- Each monitor file should export a monitor created with the builder
 
 ## Current Status
 
@@ -169,15 +169,15 @@ Griffin discovers test files by:
 </Warning>
 
 ✅ **Working**:
-- CLI test discovery and execution
-- TypeScript DSL for creating test plans
-- JSON plan execution with endpoints and waits
-- Local test execution against development servers
+- CLI monitor discovery and execution
+- TypeScript DSL for creating monitors
+- JSON monitor execution with endpoints and waits
+- Local monitor execution against development servers
 
 🚧 **In Development**:
 - Assertion evaluation (structure in place, needs implementation)
 - Remote runner deployment
-- Test scheduling and orchestration
+- Monitor scheduling and orchestration
 - Log viewing and remote execution
 
 ## Contributing
@@ -195,11 +195,11 @@ Griffin discovers test files by:
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="Tests not being discovered">
+  <Accordion title="Monitors not being discovered">
     Make sure:
-    - Test files are in `__griffin__` subdirectories
+    - Monitor files are in `__griffin__` subdirectories
     - Files have `.ts` extension
-    - Test files properly import and use `ApiCheckBuilder`
+    - Monitor files properly import and use the builder
   </Accordion>
 
   <Accordion title="Build errors">
@@ -214,8 +214,8 @@ Griffin discovers test files by:
     Build packages in dependency order: test-system → plan-executor → cli
   </Accordion>
 
-  <Accordion title="Import errors in test files">
-    When developing locally, you may need to use relative paths to import from `griffin-test-system`:
+  <Accordion title="Import errors in monitor files">
+    When developing locally, you may need to use relative paths to import from `griffin-core`:
     
     ```typescript
     import { ... } from "../griffin-test-system/src/index";

@@ -7,7 +7,7 @@ The plan and apply workflow lets you preview changes before deploying them — s
 
 ## Plan
 
-`griffin plan` compares your local test files against what's deployed on the hub and shows the diff:
+`griffin plan` compares your local monitor files against what's deployed on the hub and shows the diff:
 
 ```bash
 griffin plan
@@ -70,7 +70,7 @@ griffin apply --prune
 
 Without `--prune`, `apply` only creates and updates monitors. Monitors that exist on the hub but not locally are left untouched.
 
-With `--prune`, monitors on the hub that don't have a corresponding local test file are deleted.
+With `--prune`, monitors on the hub that don't have a corresponding local monitor file are deleted.
 
 ```bash
 # Safe: only creates/updates
@@ -87,7 +87,7 @@ Use `--prune` carefully. Always run `griffin plan` first to verify what will be 
 ## Typical workflow
 
 ```bash
-# 1. Write or modify test files in __griffin__/
+# 1. Write or modify monitor files in __griffin__/
 
 # 2. Test locally
 griffin test
