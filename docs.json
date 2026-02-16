@@ -4,7 +4,7 @@
   "name": "Griffin",
   "colors": {
     "primary": "#EC407A",
-    "light": "#07C983",
+    "light": "#EC407A",
     "dark": "#EC407A"
   },
   "favicon": "/favicon.svg",
