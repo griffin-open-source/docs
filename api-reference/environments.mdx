@@ -13,7 +13,7 @@ Most endpoints accept an `environment` query parameter or body field to scope op
 
 ```bash
 # List monitors for a specific environment
-curl "https://hub.example.com/monitor?projectId=my-project&environment=production" \
+curl "https://hub.griff.services/monitor?projectId=my-project&environment=production" \
   -H "Authorization: Bearer YOUR_KEY"
 ```
 
@@ -21,7 +21,7 @@ curl "https://hub.example.com/monitor?projectId=my-project&environment=productio
 
 ```bash
 # Get metrics for a specific environment
-curl "https://hub.example.com/metrics/summary?environment=production&period=day" \
+curl "https://hub.griff.services/metrics/summary?environment=production&period=day" \
   -H "Authorization: Bearer YOUR_KEY"
 ```
 
@@ -64,11 +64,11 @@ curl "https://hub.example.com/metrics/summary?environment=production&period=day"
 
 ```bash
 # List secrets for an environment
-curl "https://hub.example.com/secrets?environment=production" \
+curl "https://hub.griff.services/secrets?environment=production" \
   -H "Authorization: Bearer YOUR_KEY"
 
 # Set a secret in an environment
-curl -X PUT "https://hub.example.com/secrets/API_KEY" \
+curl -X PUT "https://hub.griff.services/secrets/API_KEY" \
   -H "Authorization: Bearer YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "value": "sk-1234...", "environment": "production" }'
@@ -78,7 +78,7 @@ curl -X PUT "https://hub.example.com/secrets/API_KEY" \
 
 ```bash
 # List integrations for an environment
-curl "https://hub.example.com/integrations?environment=production" \
+curl "https://hub.griff.services/integrations?environment=production" \
   -H "Authorization: Bearer YOUR_KEY"
 ```
 
@@ -87,7 +87,7 @@ curl "https://hub.example.com/integrations?environment=production" \
 Get available executor locations:
 
 ```bash
-curl "https://hub.example.com/locations" \
+curl "https://hub.griff.services/locations" \
   -H "Authorization: Bearer YOUR_KEY"
 ```
 

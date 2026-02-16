@@ -1,14 +1,14 @@
 ---
 title: "Variables"
-description: "Configure tests differently per environment"
+description: "Configure monitors differently per environment"
 ---
 
-Variables let you parameterize your tests so the same test file can run against different environments. Unlike secrets, variable values are baked into the monitor definition when you run `griffin apply` — they're not resolved at execution time.
+Variables let you parameterize your monitors so the same monitor file can run against different environments. Unlike secrets, variable values are baked into the monitor definition when you run `griffin apply` — they're not resolved at execution time.
 
 ## Using variables
 
 ```typescript
-import { variable } from "griffin-ts";
+import { variable } from "@griffin-app/griffin";
 
 builder.request("check", {
   method: GET,

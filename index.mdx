@@ -1,11 +1,11 @@
 ---
 title: "Introduction"
-description: "Open-source API testing platform for production monitoring"
+description: "Open-source API monitoring platform"
 ---
 
 ## What is Griffin?
 
-Griffin is an open-source platform for writing API tests in TypeScript and running them continuously against your production APIs. Write tests as code, deploy them to a hub, and get notified when things break.
+Griffin is an open-source platform for writing API monitors in TypeScript and running them continuously against your production APIs. Write monitors as code, deploy them to a hub, and get notified when things break.
 
 <Card
   title="Get started"
@@ -13,7 +13,7 @@ Griffin is an open-source platform for writing API tests in TypeScript and runni
   href="/getting-started/quickstart"
   horizontal
 >
-  Write and run your first API test in minutes.
+  Write and run your first API monitor in minutes.
 </Card>
 
 ## Key Features
@@ -24,21 +24,21 @@ Griffin is an open-source platform for writing API tests in TypeScript and runni
     icon="code"
     href="/writing-tests/sequential-builder"
   >
-    Write tests using sequential or graph-based builders with full type safety and IDE autocomplete.
+    Write monitors using sequential or graph-based builders with full type safety and IDE autocomplete.
   </Card>
   <Card
     title="Continuous Monitoring"
     icon="chart-line"
     href="/platform/metrics"
   >
-    Schedule tests to run every minute, hour, or day. Track success rates, latency, and uptime.
+    Schedule monitors to run every minute, hour, or day. Track success rates, latency, and uptime.
   </Card>
   <Card
     title="Multi-Location Execution"
     icon="globe"
     href="/concepts/architecture"
   >
-    Run tests from multiple regions to catch geographic issues.
+    Run monitors from multiple regions to catch geographic issues.
   </Card>
   <Card
     title="Notifications"
@@ -66,9 +66,9 @@ Griffin is an open-source platform for writing API tests in TypeScript and runni
 ## Quick Example
 
 ```typescript
-import { createTestBuilder, GET, Json, Assert, Frequency } from "griffin-ts";
+import { createMonitorBuilder, GET, Json, Assert, Frequency } from "@griffin-app/griffin";
 
-const monitor = createTestBuilder({
+const monitor = createMonitorBuilder({
   name: "health-check",
   frequency: Frequency.every(1).minute(),
 })

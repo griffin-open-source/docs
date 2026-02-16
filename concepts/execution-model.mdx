@@ -1,13 +1,13 @@
 ---
 title: "Execution Model"
-description: "How Griffin executes test monitors as graphs"
+description: "How Griffin executes monitors as graphs"
 ---
 
-Griffin executes monitors as **directed graphs**. Each test is a set of nodes (steps) connected by edges (execution order). This model supports linear flows, branching, and parallel execution paths.
+Griffin executes monitors as **directed graphs**. Each monitor is a set of nodes (steps) connected by edges (execution order). This model supports linear flows, branching, and parallel execution paths.
 
 ## Nodes
 
-Every monitor graph contains these built-in nodes plus your test steps:
+Every monitor graph contains these built-in nodes plus your defined steps:
 
 | Node type | Description |
 |-----------|-------------|
@@ -58,14 +58,14 @@ For example, after a `create-user` request returns `{ "id": 42 }`, a subsequent 
 
 Griffin provides two builder APIs that both compile to the same graph format:
 
-- **Sequential builder** (`createTestBuilder`) — Automatically creates edges in the order you add nodes. Best for linear flows.
+- **Sequential builder** (`createMonitorBuilder`) — Automatically creates edges in the order you add nodes. Best for linear flows.
 - **Graph builder** (`createGraphBuilder`) — You define edges explicitly. Required for parallel branches or complex flows.
 
-Both produce the same JSON monitor format. Choose based on your test's complexity.
+Both produce the same JSON monitor format. Choose based on your monitor's complexity.
 
 <CardGroup cols={2}>
   <Card title="Sequential Builder" icon="arrow-right" href="/writing-tests/sequential-builder">
-    Simpler API for linear test flows.
+    Simpler API for linear monitor flows.
   </Card>
   <Card title="Graph Builder" icon="diagram-project" href="/writing-tests/graph-builder">
     Full control over execution flow.

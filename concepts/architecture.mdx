@@ -3,14 +3,14 @@ title: "Architecture"
 description: "How Griffin's components work together"
 ---
 
-Griffin follows a hub-and-agent architecture. The CLI pushes test definitions to a central hub, which schedules and executes them on a recurring basis.
+Griffin follows a hub-and-agent architecture. The CLI pushes monitor definitions to a central hub, which schedules and executes them on a recurring basis.
 
 ## Components
 
 | Component | What it does |
 |-----------|-------------|
-| **griffin-ts** | TypeScript DSL for writing test definitions |
-| **griffin-cli** | Command-line tool for local testing and hub management |
+| **griffin-core** | TypeScript DSL for writing monitor definitions |
+| **@griffin-app/griffin** | CLI and public package for local development and hub management |
 | **griffin-hub** | Control plane — stores monitors, schedules runs, tracks results |
 | **griffin-executor** | Execution engine that runs monitors and reports results |
 
@@ -18,12 +18,12 @@ Griffin follows a hub-and-agent architecture. The CLI pushes test definitions to
 
 ```mermaid
 flowchart TB
-    Code["Your code\n__griffin__/ test files"] -->|plan / apply| Hub["Griffin Hub\nScheduler · API · Storage"]
+    Code["Your code\n__griffin__/ monitor files"] -->|plan / apply| Hub["Griffin Hub\nScheduler · API · Storage"]
     Hub -->|runs / metrics| Code
     Hub -->|enqueue| Executor["Executor\nHTTP calls · Assertions · Results"]
 ```
 
-1. You write tests in `__griffin__/` directories using the TypeScript DSL
+1. You write monitors in `__griffin__/` directories using the TypeScript DSL
 2. `griffin apply` pushes monitor definitions to the hub
 3. The hub's scheduler enqueues jobs based on each monitor's frequency
 4. The executor picks up jobs, makes HTTP requests, runs assertions, and reports results
@@ -63,16 +63,16 @@ Executors register with the hub, receive jobs via a queue (PostgreSQL or SQS), a
 
 A monitor is the unit of work in Griffin. It's a JSON document containing:
 
-- **Nodes** — the steps in your test (HTTP requests, waits, assertions)
+- **Nodes** — the steps in your monitor (HTTP requests, waits, assertions)
 - **Edges** — the execution order between nodes
-- **Frequency** — how often the test runs
-- **Locations** — where the test executes (in distributed mode)
+- **Frequency** — how often the monitor runs
+- **Locations** — where the monitor executes (in distributed mode)
 
 The TypeScript DSL compiles to this JSON format. You never need to write JSON directly.
 
 ## Execution model
 
-Tests are executed as directed graphs. Each node runs in order defined by the edges, and results from earlier nodes (status codes, response bodies, headers) are available to later nodes for assertions and variable extraction.
+Monitors are executed as directed graphs. Each node runs in order defined by the edges, and results from earlier nodes (status codes, response bodies, headers) are available to later nodes for assertions and variable extraction.
 
 <Card title="Execution Model" icon="diagram-project" href="/concepts/execution-model">
   Learn more about graph-based execution.

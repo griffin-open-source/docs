@@ -5,7 +5,7 @@ description: "Get started with Griffin in minutes"
 
 ## Get started in three steps
 
-Create your first API test and run it locally against your development server.
+Create your first API monitor and run it locally against your development server.
 
 ### Step 1: Install Griffin CLI
 
@@ -14,20 +14,20 @@ Create your first API test and run it locally against your development server.
     Install the Griffin CLI globally using npm:
     
     ```bash
-    npm install -g griffin-cli
+    npm install -g @griffin-app/griffin
     ```
     
     Or use `npx` to run it without installing:
     
     ```bash
-    npx griffin-cli run-local
+    npx @griffin-app/griffin run-local
     ```
   </Accordion>
   <Accordion icon="code-branch" title="Build from source">
     If you're working with the Griffin repository directly:
     
     ```bash
-    cd griffin-cli
+    cd @griffin-app/griffin
     npm install
     npm run build
     ```
@@ -40,26 +40,26 @@ Create your first API test and run it locally against your development server.
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Create your first test
+### Step 2: Create your first monitor
 
 <AccordionGroup>
-  <Accordion icon="file-code" title="Create a test file">
-    Create a test file in a `__griffin__` subdirectory:
+  <Accordion icon="file-code" title="Create a monitor file">
+    Create a monitor file in a `__griffin__` subdirectory:
     
     ```bash
     mkdir -p __griffin__
-    touch __griffin__/my-first-test.ts
+    touch __griffin__/my-first-monitor.ts
     ```
     
-    <Tip>Griffin automatically discovers `.ts` test files in `__griffin__` subdirectories.</Tip>
+    <Tip>Griffin automatically discovers `.ts` monitor files in `__griffin__` subdirectories.</Tip>
   </Accordion>
-  <Accordion icon="pen-to-square" title="Write your test">
-    Add the following code to your test file:
+  <Accordion icon="pen-to-square" title="Write your monitor">
+    Add the following code to your monitor file:
 
     ```typescript
-    import { createTestBuilder, GET, JSON, Assert, Frequency } from "griffin-ts";
+    import { createMonitorBuilder, GET, JSON, Assert, Frequency } from "@griffin-app/griffin";
 
-    const monitor = createTestBuilder({
+    const monitor = createMonitorBuilder({
       name: "my-first-check",
       endpoint_host: "http://localhost:3000"  // Your API server URL
     })
@@ -80,7 +80,7 @@ Create your first API test and run it locally against your development server.
   </Accordion>
 </AccordionGroup>
 
-### Step 3: Run your test
+### Step 3: Run your monitor
 
 <AccordionGroup>
   <Accordion icon="play" title="Start your API server">
@@ -94,7 +94,7 @@ Create your first API test and run it locally against your development server.
     
     This starts the server on `http://localhost:3000` (or your configured port).
   </Accordion>
-  <Accordion icon="rocket" title="Run tests locally">
+  <Accordion icon="rocket" title="Run monitors locally">
     First, initialize Griffin in your project and create an environment:
 
     ```bash
@@ -102,7 +102,7 @@ Create your first API test and run it locally against your development server.
     griffin env add dev
     ```
 
-    Then run all discovered tests for the dev environment:
+    Then run all discovered monitors for the dev environment:
 
     ```bash
     griffin local run dev
@@ -111,20 +111,20 @@ Create your first API test and run it locally against your development server.
     Or if using npx:
 
     ```bash
-    npx griffin-cli local run dev
+    npx @griffin-app/griffin local run dev
     ```
 
-    Griffin will discover all test files in `__griffin__` directories and execute them against their configured endpoint hosts.
+    Griffin will discover all monitor files in `__griffin__` directories and execute them against their configured endpoint hosts.
   </Accordion>
 </AccordionGroup>
 
 ## Next steps
 
-Now that you have your first test running, explore these features:
+Now that you have your first monitor running, explore these features:
 
 <CardGroup cols={2}>
-  <Card title="Test System Guide" icon="code" href="/guides/test-system">
-    Learn the full TypeScript DSL for building complex tests.
+  <Card title="Monitor System Guide" icon="code" href="/guides/test-system">
+    Learn the full TypeScript DSL for building complex monitors.
   </Card>
   <Card title="CLI Reference" icon="terminal" href="/guides/cli">
     Discover all CLI commands and options.
@@ -133,7 +133,7 @@ Now that you have your first test running, explore these features:
     Understand how Griffin components work together.
   </Card>
   <Card title="Production Setup" icon="server" href="/guides/runner">
-    Set up scheduled test execution in production.
+    Set up scheduled monitor execution in production.
   </Card>
 </CardGroup>
 

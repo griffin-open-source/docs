@@ -1,11 +1,11 @@
 ---
 title: "Graph Builder"
-description: "Build complex test flows with explicit control over execution order"
+description: "Build complex monitor flows with explicit control over execution order"
 ---
 
 The graph builder gives you full control over execution flow. You define nodes (HTTP requests, waits, assertions) and edges (the order they run in). This is the right choice when you need branching, parallel paths, or non-linear flows.
 
-For simple linear tests, see the [Sequential Builder](/writing-tests/sequential-builder).
+For simple linear monitors, see the [Sequential Builder](/writing-tests/sequential-builder).
 
 ## Basic example
 
@@ -13,7 +13,7 @@ For simple linear tests, see the [Sequential Builder](/writing-tests/sequential-
 import {
   createGraphBuilder, HttpRequest, Assertion,
   GET, Json, START, END, Frequency, Assert
-} from "griffin-ts";
+} from "@griffin-app/griffin";
 
 const monitor = createGraphBuilder({
   name: "health-check",
@@ -52,7 +52,7 @@ Use `addNode(name, node)` to register steps. Three node types are available:
 ### HTTP requests
 
 ```typescript
-import { HttpRequest, GET, POST, Json } from "griffin-ts";
+import { HttpRequest, GET, POST, Json } from "@griffin-app/griffin";
 
 builder.addNode("get-users", HttpRequest({
   method: GET,
@@ -88,7 +88,7 @@ builder.addNode("create-user", HttpRequest({
 ### Waits
 
 ```typescript
-import { Wait } from "griffin-ts";
+import { Wait } from "@griffin-app/griffin";
 
 builder.addNode("pause", Wait({ seconds: 2 }))
 
@@ -100,10 +100,10 @@ Wait({ minutes: 1 })  // minutes
 ### Assertions
 
 ```typescript
-import { Assertion, Assert } from "griffin-ts";
+import { Assertion, Assert } from "@griffin-app/griffin";
 
 // Create a state proxy to reference previous node results
-import { createStateProxy } from "griffin-ts";
+import { createStateProxy } from "@griffin-app/griffin";
 const state = createStateProxy(["get-users"]);
 
 builder.addNode("validate", Assertion([
@@ -119,7 +119,7 @@ See [Assertions](/writing-tests/assertions) for the full assertion API.
 Edges define execution order. Use `addEdge(from, to)` with `START` and `END` constants:
 
 ```typescript
-import { START, END } from "griffin-ts";
+import { START, END } from "@griffin-app/griffin";
 
 builder
   .addEdge(START, "create-user")   // Start with create
@@ -154,7 +154,7 @@ import {
   createGraphBuilder, HttpRequest, Wait, Assertion,
   GET, POST, DELETE, Json, START, END,
   Frequency, Assert, createStateProxy, secret
-} from "griffin-ts";
+} from "@griffin-app/griffin";
 
 const state = createStateProxy(["create", "get", "delete"]);
 

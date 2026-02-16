@@ -10,9 +10,9 @@ Every monitor has a frequency that determines how often the hub schedules it for
 Frequency is a required field in both builders:
 
 ```typescript
-import { Frequency } from "griffin-ts";
+import { Frequency } from "@griffin-app/griffin";
 
-createTestBuilder({
+createMonitorBuilder({
   name: "health-check",
   frequency: Frequency.every(5).minutes(),
 })
@@ -61,7 +61,7 @@ Higher frequencies mean more executions, which affects resource usage on self-ho
 Optionally specify where your monitor should execute. In distributed mode, jobs are routed to executors running in the specified locations:
 
 ```typescript
-createTestBuilder({
+createMonitorBuilder({
   name: "global-check",
   frequency: Frequency.every(5).minutes(),
   locations: ["us-east-1", "eu-west-1"],

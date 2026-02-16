@@ -14,7 +14,7 @@ griffin env add staging
 griffin env add production
 ```
 
-Each monitor is deployed to a specific environment. The same test file can be deployed to multiple environments with different configuration.
+Each monitor is deployed to a specific environment. The same monitor file can be deployed to multiple environments with different configuration.
 
 ## Variables
 
@@ -26,12 +26,12 @@ griffin variables add API_HOST=https://api.staging.example.com --env staging
 griffin variables add API_HOST=https://api.example.com --env production
 ```
 
-In your test files, reference variables with the `variable()` function:
+In your monitor files, reference variables with the `variable()` function:
 
 ```typescript
-import { createTestBuilder, GET, Json, variable, Frequency } from "griffin-ts";
+import { createMonitorBuilder, GET, Json, variable, Frequency } from "@griffin-app/griffin";
 
-const monitor = createTestBuilder({
+const monitor = createMonitorBuilder({
   name: "health-check",
   frequency: Frequency.every(5).minutes(),
 })

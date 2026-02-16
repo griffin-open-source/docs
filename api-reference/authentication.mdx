@@ -11,7 +11,7 @@ For self-hosted hubs with `AUTH_MODE=api-key`, include the API key in the `Autho
 
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
-  https://hub.example.com/monitor
+  https://hub.griff.services/monitor
 ```
 
 API keys are configured on the hub via the `AUTH_API_KEYS` environment variable. Generate a key with:
@@ -26,7 +26,7 @@ For hubs with `AUTH_MODE=oidc` (including Griffin Cloud), include a JWT token fr
 
 ```bash
 curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  https://hub.example.com/monitor
+  https://hub.griff.services/monitor
 ```
 
 OIDC tokens include `organizationId` and `role` claims that determine access scope.

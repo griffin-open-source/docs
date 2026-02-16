@@ -3,14 +3,14 @@ title: "Cloud vs Self-Host"
 description: "Choose between Griffin Cloud and self-hosting Griffin Hub"
 ---
 
-Griffin supports two deployment models. Your tests and CLI workflow are identical in both — the difference is where the hub runs.
+Griffin supports two deployment models. Your monitors and CLI workflow are identical in both — the difference is where the hub runs.
 
 ## Griffin Cloud
 
 Griffin Cloud is the managed platform. Sign up, authenticate with the CLI, and start deploying monitors immediately.
 
 - **No infrastructure to manage** — we run the hub, database, and executors
-- **Multi-region execution** — run tests from multiple global locations
+- **Multi-region execution** — run monitors from multiple global locations
 - **Built-in integrations** — Slack, email, and webhook notifications pre-configured
 - **Organizations and teams** — invite members, assign roles, manage billing
 - **Always up to date** — new features and improvements ship automatically
@@ -33,7 +33,7 @@ Run Griffin Hub on your own infrastructure for full control over data, networkin
 
 - **Data stays with you** — monitors, results, and secrets never leave your network
 - **Custom locations** — run executors anywhere (your data centers, cloud regions, edge nodes)
-- **Network access** — test internal APIs not exposed to the internet
+- **Network access** — monitor internal APIs not exposed to the internet
 - **No usage limits** — run as many monitors as your infrastructure supports
 
 ```bash
@@ -72,4 +72,4 @@ griffin auth connect --url https://your-hub.example.com --token YOUR_KEY
 griffin auth login
 ```
 
-Your test files don't need to change. Only the hub connection changes.
+Your monitor files don't need to change. Only the hub connection changes.
