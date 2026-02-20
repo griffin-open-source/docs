@@ -5,6 +5,8 @@ description: "Configure monitors differently per environment"
 
 Variables let you parameterize your monitors so the same monitor file can run against different environments. Unlike secrets, variable values are baked into the monitor definition when you run `griffin apply` — they're not resolved at execution time.
 
+Use `variable("key")` with a single key for one value (e.g. base URL). To build a string from multiple variables, secrets, or prior response data, use the **template** tagged template literal (see [Template interpolation](#template-interpolation)).
+
 ## Using variables
 
 ```typescript
@@ -22,13 +24,13 @@ When you run `griffin apply production`, the CLI resolves `variable("API_HOST")`
 
 ## Template interpolation
 
-Use a template string to embed a variable within a larger value:
+Use the `template` tagged template literal to embed variables in a larger string:
 
 ```typescript
-variable("API_VERSION", "/api/${API_VERSION}/health")
-```
+import { template, variable } from "@griffin-app/griffin";
 
-The template must contain `${key}` matching the variable key.
+template`/api/${variable("API_VERSION")}/health`
+```
 
 ## Managing variables with the CLI
 
@@ -74,10 +76,12 @@ griffin variables add API_HOST=https://api.example.com --env production
 ### Versioned API paths
 
 ```typescript
+import { template, variable } from "@griffin-app/griffin";
+
 builder.request("check", {
   method: GET,
   base: variable("API_HOST"),
   response_format: Json,
-  path: variable("API_VERSION", "/api/${API_VERSION}/users"),
+  path: template`/api/${variable("API_VERSION")}/users`,
 })
 ```

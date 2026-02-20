@@ -24,7 +24,9 @@ Assert(state["req"].status).lessThan(300)
 
 ### Response body
 
-Access nested properties with bracket notation. Use `.at(index)` for array elements:
+Access nested properties with bracket notation. Use `.at(index)` for array elements.
+
+For steps with `response_format: NoContent` (e.g. 204 No Content), there is no body — assert only on `state["req"].status` (e.g. `.equals(204)`).
 
 ```typescript
 // Simple property

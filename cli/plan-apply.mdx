@@ -12,7 +12,11 @@ The plan and apply workflow lets you preview changes before deploying them — s
 ```bash
 griffin plan
 griffin plan production
+griffin plan --monitor health-check
+griffin plan --env production --monitor health-check
 ```
+
+Use `--monitor <name>` to preview changes for only that monitor.
 
 Example output:
 
@@ -51,9 +55,12 @@ griffin plan --json
 ```bash
 griffin apply
 griffin apply production
+# Apply only a single monitor by name
+griffin apply --monitor health-check
+griffin apply --env production --monitor health-check
 ```
 
-By default, it shows you what will change and asks for confirmation. Use flags to customize:
+Use `--monitor <name>` to create or update only that monitor. By default, it shows you what will change and asks for confirmation. Use flags to customize:
 
 ```bash
 # Skip confirmation
@@ -83,6 +90,16 @@ griffin apply --prune
 <Warning>
 Use `--prune` carefully. Always run `griffin plan` first to verify what will be deleted.
 </Warning>
+
+## Validate and test (with optional filter)
+
+You can restrict validation or local runs to a single monitor by name:
+
+```bash
+griffin validate --monitor health-check
+griffin test --monitor health-check
+griffin test --env staging --monitor health-check
+```
 
 ## Typical workflow
 

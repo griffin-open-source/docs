@@ -79,9 +79,9 @@ builder.addNode("create-user", HttpRequest({
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `method` | `GET`, `POST`, `PUT`, `DELETE`, `PATCH` | Yes | HTTP method |
-| `base` | `string` or `variable()` | Yes | Base URL (e.g., `"https://api.example.com"`) |
-| `path` | `string` or `variable()` | Yes | URL path (e.g., `"/users"`) |
-| `response_format` | `Json`, `Xml`, `Text` | Yes | Expected response format |
+| `base` | `string`, `variable()`, or `template` | Yes | Base URL (e.g., `"https://api.example.com"`) |
+| `path` | `string`, `variable()`, or `template` | Yes | URL path (e.g., `"/users"`) |
+| `response_format` | `Json`, `Xml`, `Text`, `NoContent` | Yes | Expected response format (`NoContent` for 204 with no body) |
 | `headers` | `Record<string, any>` | No | Request headers |
 | `body` | `any` | No | Request body |
 

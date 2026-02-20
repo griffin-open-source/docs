@@ -65,6 +65,8 @@ builder
   })
 ```
 
+**Response format:** Use `Json` or `Xml` for JSON/XML bodies. Use `NoContent` (import from `@griffin-app/griffin`) for endpoints that return **204 with no body** (e.g. successful DELETE); assert only on `state["node"].status` (e.g. `.equals(204)`), not on body.
+
 See the [Graph Builder](/writing-tests/graph-builder#http-requests) page for the full config reference.
 
 ## Adding waits
