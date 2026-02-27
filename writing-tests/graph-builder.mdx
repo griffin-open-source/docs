@@ -3,9 +3,9 @@ title: "Graph Builder"
 description: "Build complex monitor flows with explicit control over execution order"
 ---
 
-The graph builder gives you full control over execution flow. You define nodes (HTTP requests, waits, assertions) and edges (the order they run in). This is the right choice when you need branching, parallel paths, or non-linear flows.
+The graph builder gives you full control over execution flow. You define nodes (HTTP requests, browser steps, waits, assertions) and edges (the order they run in). This is the right choice when you need branching, parallel paths, or non-linear flows.
 
-For simple linear monitors, see the [Sequential Builder](/writing-tests/sequential-builder).
+For simple linear monitors, see the [Sequential Builder](/writing-tests/sequential-builder). For browser-based monitoring, see [Browser Monitors](/writing-tests/browser-monitors).
 
 ## Basic example
 
@@ -47,7 +47,7 @@ createGraphBuilder({
 
 ## Adding nodes
 
-Use `addNode(name, node)` to register steps. Three node types are available:
+Use `addNode(name, node)` to register steps. Four node types are available:
 
 ### HTTP requests
 
@@ -84,6 +84,25 @@ builder.addNode("create-user", HttpRequest({
 | `response_format` | `Json`, `Xml`, `Text`, `NoContent` | Yes | Expected response format (`NoContent` for 204 with no body) |
 | `headers` | `Record<string, any>` | No | Request headers |
 | `body` | `any` | No | Request body |
+
+### Browser steps
+
+```typescript
+import {
+  BrowserAction, navigate, waitForSelector, extractText,
+} from "@griffin-app/griffin";
+
+builder.addNode("check_page", BrowserAction({
+  browser: "chromium",
+  steps: [
+    navigate("https://example.com"),
+    waitForSelector("h1"),
+    extractText("heading", "h1"),
+  ],
+}))
+```
+
+See [Browser Monitors](/writing-tests/browser-monitors) for the full step reference and BrowserAction config.
 
 ### Waits
 

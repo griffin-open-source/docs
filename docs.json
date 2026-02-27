@@ -36,6 +36,7 @@
             "pages": [
               "writing-tests/graph-builder",
               "writing-tests/sequential-builder",
+              "writing-tests/browser-monitors",
               "writing-tests/assertions",
               "writing-tests/secrets",
               "writing-tests/variables",

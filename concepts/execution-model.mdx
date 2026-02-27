@@ -14,6 +14,7 @@ Every monitor graph contains these built-in nodes plus your defined steps:
 | **START** | Entry point — execution begins here |
 | **END** | Exit point — execution completes here |
 | **HTTP Request** | Makes an HTTP request and captures the response |
+| **Browser** | Launches a real browser (Playwright) to navigate pages, click, fill forms, and extract text |
 | **Wait** | Pauses execution for a specified duration |
 | **Assertion** | Validates results from previous nodes |
 
@@ -33,8 +34,8 @@ flowchart LR
 
 1. The executor begins at the `START` node
 2. It follows edges to the next node(s) and executes them
-3. Results from each node (status code, response body, headers, latency) are stored in the execution state
-4. Later nodes can reference earlier results — assertions can check response bodies, and requests can use extracted values
+3. Results from each node (status code, response body, headers, latency — or page URL, title, extracts, console errors for browser nodes) are stored in the execution state
+4. Later nodes can reference earlier results — assertions can check response bodies, browser page state, extracted text, and requests can use values from prior responses
 5. Execution completes when all paths reach `END`
 
 ## State and data passing
@@ -63,11 +64,14 @@ Griffin provides two builder APIs that both compile to the same graph format:
 
 Both produce the same JSON monitor format. Choose based on your monitor's complexity.
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Sequential Builder" icon="arrow-right" href="/writing-tests/sequential-builder">
     Simpler API for linear monitor flows.
   </Card>
   <Card title="Graph Builder" icon="diagram-project" href="/writing-tests/graph-builder">
     Full control over execution flow.
+  </Card>
+  <Card title="Browser Monitors" icon="browser" href="/writing-tests/browser-monitors">
+    Playwright-powered page interactions.
   </Card>
 </CardGroup>

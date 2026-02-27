@@ -1,11 +1,11 @@
 ---
 title: "Sequential Builder"
-description: "The simplest way to write linear API monitor flows"
+description: "The simplest way to write linear API and browser monitor flows"
 ---
 
 The sequential builder is the easiest way to write Griffin monitors. You add steps in order and edges are created automatically: `START → step 1 → step 2 → ... → END`.
 
-For monitors that need branching or parallel paths, see the [Graph Builder](/writing-tests/graph-builder).
+For monitors that need branching or parallel paths, see the [Graph Builder](/writing-tests/graph-builder). For browser-based monitoring, see [Browser Monitors](/writing-tests/browser-monitors).
 
 ## Basic example
 
@@ -114,6 +114,35 @@ builder
 ```
 
 See [Assertions](/writing-tests/assertions) for the full assertion API.
+
+## Adding browser steps
+
+Use `.browser(name, browserAction)` to add a Playwright browser step:
+
+```typescript
+import {
+  BrowserAction, navigate, waitForSelector,
+  extractText, screenshot,
+} from "@griffin-app/griffin";
+
+builder
+  .browser("check_page", BrowserAction({
+    browser: "chromium",
+    steps: [
+      navigate("https://example.com"),
+      waitForSelector("h1"),
+      extractText("heading", "h1"),
+      screenshot(),
+    ],
+  }))
+  .assert((state) => [
+    Assert(state["check_page"].page.url).contains("example.com"),
+    Assert(state["check_page"].extracts["heading"]).equals("Welcome"),
+    Assert(state["check_page"].console.errors).isEmpty(),
+  ])
+```
+
+Browser steps can be mixed freely with `.request()` and `.wait()` in any order. See [Browser Monitors](/writing-tests/browser-monitors) for the full browser API, step reference, and examples.
 
 ## Complete example
 

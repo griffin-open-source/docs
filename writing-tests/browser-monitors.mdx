@@ -1,0 +1,310 @@
+---
+title: "Browser Monitors"
+description: "Monitor web pages with Playwright — navigate, click, fill forms, and assert on page state"
+---
+
+Browser monitors use [Playwright](https://playwright.dev) to launch a real browser and interact with your web pages. Use them to monitor login flows, verify UI content, catch JavaScript errors, and test anything that requires a browser.
+
+Browser monitors work with both the [Sequential Builder](/writing-tests/sequential-builder) and [Graph Builder](/writing-tests/graph-builder), and can be mixed with API requests in the same monitor.
+
+## Basic example
+
+```typescript
+import {
+  createMonitorBuilder, Frequency, Assert,
+  BrowserAction, navigate, waitForSelector, extractText,
+} from "@griffin-app/griffin";
+
+const monitor = createMonitorBuilder({
+  name: "landing-page",
+  frequency: Frequency.every(5).minutes(),
+})
+  .browser("load_page", BrowserAction({
+    browser: "chromium",
+    steps: [
+      navigate("https://www.example.com"),
+      waitForSelector("h1"),
+      extractText("heading", "h1"),
+    ],
+  }))
+  .assert((state) => [
+    Assert(state["load_page"].page.url).contains("example.com"),
+    Assert(state["load_page"].page.title).contains("Example"),
+    Assert(state["load_page"].extracts["heading"]).equals("Welcome"),
+    Assert(state["load_page"].console.errors).isEmpty(),
+  ])
+  .build();
+
+export default monitor;
+```
+
+## Browser steps
+
+Each browser node contains an ordered list of steps. Steps execute sequentially inside a single browser page.
+
+### navigate
+
+Navigate to a URL. Accepts a raw string, `variable()`, or `secret()`.
+
+```typescript
+navigate("https://example.com")
+navigate("https://example.com", { wait_until: "networkidle" })
+navigate(variable("APP_URL"))
+```
+
+**Options:**
+
+| Option | Values | Default |
+|--------|--------|---------|
+| `wait_until` | `"load"`, `"domcontentloaded"`, `"networkidle"`, `"commit"` | `"load"` |
+
+### click
+
+Click an element by CSS selector.
+
+```typescript
+click("[data-testid='submit']")
+click("button.menu", { button: "right", click_count: 2 })
+```
+
+**Options:**
+
+| Option | Values | Default |
+|--------|--------|---------|
+| `button` | `"left"`, `"right"`, `"middle"` | `"left"` |
+| `click_count` | number | `1` |
+
+### fill
+
+Type into an input field. The value accepts raw strings, `variable()`, or `secret()`.
+
+```typescript
+fill("#email", "test@example.com")
+fill("#password", secret("TEST_PASSWORD"))
+fill("#api-url", variable("API_BASE"))
+```
+
+### select
+
+Choose an option from a `<select>` dropdown.
+
+```typescript
+select("#country", "US")
+select("#plan", variable("DEFAULT_PLAN"))
+```
+
+### waitForSelector
+
+Wait for an element to reach a given state before continuing.
+
+```typescript
+waitForSelector("[data-testid='dashboard']")
+waitForSelector(".loading", { state: "hidden", timeout_ms: 10000 })
+```
+
+**Options:**
+
+| Option | Values | Default |
+|--------|--------|---------|
+| `state` | `"visible"`, `"hidden"`, `"attached"`, `"detached"` | `"visible"` |
+| `timeout_ms` | number (milliseconds) | executor default |
+
+### extractText
+
+Extract the text content of an element and store it under a name for later assertions.
+
+```typescript
+extractText("heading", "h1")
+extractText("price", ".product-price")
+extractText("error_message", "[data-testid='error']")
+```
+
+Access extracted values in assertions with `state["node"].extracts["name"]`.
+
+### screenshot
+
+Capture a screenshot of the page at this point in the flow.
+
+```typescript
+screenshot()
+```
+
+## BrowserAction config
+
+Wrap your steps in `BrowserAction()` to create a browser node:
+
+```typescript
+BrowserAction({
+  browser: "chromium",                        // Optional: browser engine
+  viewport: { width: 1920, height: 1080 },   // Optional: viewport size
+  steps: [                                    // Required: ordered steps
+    navigate("https://example.com"),
+    click("button"),
+  ],
+})
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `browser` | `"chromium"`, `"firefox"`, `"webkit"` | `"chromium"` | Browser engine to use |
+| `viewport` | `{ width: number, height: number }` | Browser default | Viewport dimensions |
+| `steps` | `BrowserStep[]` | — | Ordered list of browser steps |
+
+## Browser assertions
+
+Browser nodes expose different state properties than API request nodes. Use these in `.assert()`:
+
+### Page state
+
+```typescript
+Assert(state["node"].page.url).contains("/dashboard")
+Assert(state["node"].page.title).equals("Dashboard")
+```
+
+### Performance
+
+```typescript
+Assert(state["node"].duration).lessThan(5000)
+```
+
+### Console errors
+
+Catch JavaScript errors thrown in the browser:
+
+```typescript
+Assert(state["node"].console.errors).isEmpty()
+```
+
+### Extracted text
+
+Assert on values captured by `extractText()` steps:
+
+```typescript
+Assert(state["node"].extracts["heading"]).equals("Welcome")
+Assert(state["node"].extracts["price"]).contains("$")
+Assert(state["node"].extracts["status"]).not.equals("error")
+```
+
+All standard [assertion predicates](/writing-tests/assertions#predicates) and [negation](/writing-tests/assertions#negation) work with browser subjects.
+
+## Login flow example
+
+A common pattern: navigate to a login page, enter credentials using `secret()`, submit, and verify the redirect.
+
+```typescript
+import {
+  createMonitorBuilder, Frequency, Assert,
+  BrowserAction, navigate, fill, click,
+  waitForSelector, screenshot, secret,
+} from "@griffin-app/griffin";
+
+const monitor = createMonitorBuilder({
+  name: "login-flow",
+  frequency: Frequency.every(30).minutes(),
+})
+  .browser("login", BrowserAction({
+    steps: [
+      navigate("https://app.example.com/login"),
+      fill("#email", "test@example.com"),
+      fill("#password", secret("TEST_PASSWORD")),
+      click("[data-testid='submit']"),
+      waitForSelector("[data-testid='dashboard']"),
+      screenshot(),
+    ],
+  }))
+  .assert((state) => [
+    Assert(state["login"].page.url).contains("/dashboard"),
+    Assert(state["login"].console.errors).isEmpty(),
+    Assert(state["login"].duration).lessThan(10000),
+  ])
+  .build();
+
+export default monitor;
+```
+
+## Mixed API + browser monitors
+
+Combine API requests and browser interactions in a single monitor. For example, create a resource via the API and then verify it appears in the UI:
+
+```typescript
+import {
+  createMonitorBuilder, POST, Json, Frequency, Assert,
+  BrowserAction, navigate, waitForSelector, extractText, variable,
+} from "@griffin-app/griffin";
+
+const monitor = createMonitorBuilder({
+  name: "create-and-verify",
+  frequency: Frequency.every(1).hour(),
+})
+  .request("create_item", {
+    method: POST,
+    base: variable("api-service"),
+    path: "/api/v1/items",
+    response_format: Json,
+    body: { name: "test-item" },
+  })
+  .assert((state) => [
+    Assert(state["create_item"].status).equals(201),
+  ])
+  .browser("verify_in_ui", BrowserAction({
+    steps: [
+      navigate("https://app.example.com/items"),
+      waitForSelector(".item-list"),
+      extractText("item_name", ".item-list .item:first-child .name"),
+    ],
+  }))
+  .assert((state) => [
+    Assert(state["verify_in_ui"].extracts["item_name"]).equals("test-item"),
+  ])
+  .build();
+
+export default monitor;
+```
+
+## Using with the graph builder
+
+Use `BrowserAction()` with `addNode()` the same way you use `HttpRequest()`:
+
+```typescript
+import {
+  createGraphBuilder, BrowserAction, navigate, click,
+  START, END, Frequency,
+} from "@griffin-app/griffin";
+
+const monitor = createGraphBuilder({
+  name: "browser-graph",
+  frequency: Frequency.every(30).minutes(),
+})
+  .addNode("check_page", BrowserAction({
+    browser: "chromium",
+    steps: [
+      navigate("https://example.com"),
+      click("[data-testid='cta']"),
+    ],
+  }))
+  .addEdge(START, "check_page")
+  .addEdge("check_page", END)
+  .build();
+
+export default monitor;
+```
+
+## Frequency requirements
+
+Browser monitors require a minimum frequency of **1 minute**. API-only monitors have no minimum.
+
+```typescript
+// ✅ Valid
+Frequency.every(1).minutes()
+Frequency.every(5).minutes()
+Frequency.every(1).hour()
+
+// ❌ Throws at build time
+Frequency.every(30).seconds()   // less than 1 minute
+```
+
+See [Frequencies & Scheduling](/writing-tests/frequencies) for more on scheduling.
+
+<Note>
+Browser monitors are more resource-intensive than API monitors. Choose a frequency that balances monitoring coverage with execution cost.
+</Note>

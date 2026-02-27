@@ -1,16 +1,16 @@
 ---
 title: "Assertions"
-description: "Validate API responses with a fluent assertion DSL"
+description: "Validate API responses and browser page state with a fluent assertion DSL"
 ---
 
-Assertions let you validate HTTP responses — status codes, response bodies, headers, and latency. They use a fluent API that reads naturally:
+Assertions let you validate HTTP responses and browser page state — status codes, response bodies, headers, latency, page URLs, extracted text, and more. They use a fluent API that reads naturally:
 
 ```typescript
 Assert(state["my-request"].status).equals(200)
 Assert(state["my-request"].body["name"]).not.isEmpty()
 ```
 
-## Assertion subjects
+## API request assertion subjects
 
 You can assert on four properties of any HTTP request node:
 
@@ -56,6 +56,49 @@ Latency is measured in milliseconds:
 ```typescript
 Assert(state["req"].latency).lessThan(2000)
 Assert(state["req"].latency).lessThanOrEqual(500)
+```
+
+## Browser assertion subjects
+
+Browser nodes expose different properties than API request nodes. See [Browser Monitors](/writing-tests/browser-monitors) for full details.
+
+### Page URL
+
+```typescript
+Assert(state["browser_node"].page.url).contains("/dashboard")
+Assert(state["browser_node"].page.url).startsWith("https://")
+```
+
+### Page title
+
+```typescript
+Assert(state["browser_node"].page.title).equals("Dashboard")
+Assert(state["browser_node"].page.title).contains("App")
+```
+
+### Duration
+
+Total time for all browser steps, in milliseconds:
+
+```typescript
+Assert(state["browser_node"].duration).lessThan(5000)
+```
+
+### Console errors
+
+JavaScript errors captured from the browser console:
+
+```typescript
+Assert(state["browser_node"].console.errors).isEmpty()
+```
+
+### Extracted text
+
+Values captured by `extractText()` steps:
+
+```typescript
+Assert(state["browser_node"].extracts["heading"]).equals("Welcome")
+Assert(state["browser_node"].extracts["price"]).contains("$")
 ```
 
 ## Predicates

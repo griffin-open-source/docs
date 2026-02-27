@@ -47,13 +47,40 @@ The hub's scheduler runs on a tick interval (default: 30 seconds). On each tick,
 | Frequency | Good for |
 |-----------|----------|
 | Every 1 minute | Critical health checks, payment APIs, auth endpoints |
-| Every 5 minutes | Important API endpoints, core business flows |
+| Every 5 minutes | Important API endpoints, core business flows, browser page checks |
 | Every 15 minutes | Standard monitoring, CRUD operations |
+| Every 30 minutes | Browser login flows, multi-step UI tests |
 | Every 1 hour | Low-priority checks, third-party API status |
 | Every 1 day | Periodic validation, data integrity checks |
 
 <Note>
 Higher frequencies mean more executions, which affects resource usage on self-hosted deployments and costs on Griffin Cloud.
+</Note>
+
+## Browser monitor frequency
+
+[Browser monitors](/writing-tests/browser-monitors) require a minimum frequency of **1 minute**. API-only monitors have no minimum. This constraint is enforced at build time — calling `.build()` will throw an error if a browser monitor's frequency is less than 1 minute.
+
+```typescript
+// ✅ Valid — browser monitor at 5 minutes
+createMonitorBuilder({
+  name: "page-check",
+  frequency: Frequency.every(5).minutes(),
+})
+  .browser("check", BrowserAction({ ... }))
+  .build();
+
+// ❌ Throws at build time — less than 1 minute
+createMonitorBuilder({
+  name: "too-fast",
+  frequency: Frequency.every(30).seconds(),
+})
+  .browser("check", BrowserAction({ ... }))
+  .build();
+```
+
+<Note>
+Browser monitors are more resource-intensive than API monitors because they launch a real browser. Choose a frequency that balances monitoring coverage with execution cost.
 </Note>
 
 ## Locations
