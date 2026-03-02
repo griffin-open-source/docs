@@ -34,9 +34,12 @@ Removing an environment locally does not delete monitors already deployed to the
 
 ## griffin variables
 
-Manage per-environment variables.
+Variables are stored in `griffin.variables.json` at the project root, per environment. Use `variables pull` to discover variable keys from your monitor files and add any missing keys (with a placeholder) to the file.
 
 ```bash
+# Sync variable keys from monitors into griffin.variables.json
+griffin variables pull
+
 # List variables
 griffin variables list --env production
 

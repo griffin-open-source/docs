@@ -18,9 +18,12 @@ Each monitor is deployed to a specific environment. The same monitor file can be
 
 ## Variables
 
-Variables are scoped per environment. Use them to change values like base URLs between environments:
+Variables are stored in `griffin.variables.json` at the project root and are scoped per environment. The file is intended to be checked in so teams can share variable keys and values. Use variables to change values like base URLs between environments:
 
 ```bash
+# Sync variable keys from your monitor files (creates or updates griffin.variables.json)
+griffin variables pull
+
 # Set different API hosts per environment
 griffin variables add API_HOST=https://api.staging.example.com --env staging
 griffin variables add API_HOST=https://api.example.com --env production
