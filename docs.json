@@ -50,7 +50,8 @@
               "platform/runs",
               "platform/metrics",
               "platform/notifications",
-              "platform/integrations"
+              "platform/integrations",
+              "platform/pr-agent"
             ]
           },
           {
